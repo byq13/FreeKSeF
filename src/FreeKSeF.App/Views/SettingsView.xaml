@@ -1,0 +1,47 @@
+<UserControl x:Class="FreeKSeF.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+             d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel MaxWidth="560" HorizontalAlignment="Left" Margin="12">
+            <TextBlock Text="Dane firmy (sprzedawcy)" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+
+            <Label Content="NIP" />
+            <TextBox Text="{Binding Nip, UpdateSourceTrigger=PropertyChanged}" />
+
+            <Label Content="Nazwa firmy" />
+            <TextBox Text="{Binding Nazwa, UpdateSourceTrigger=PropertyChanged}" />
+
+            <Label Content="Adres — linia 1 (ulica i numer)" />
+            <TextBox Text="{Binding AdresL1, UpdateSourceTrigger=PropertyChanged}" />
+
+            <Label Content="Adres — linia 2 (kod i miejscowosc)" />
+            <TextBox Text="{Binding AdresL2, UpdateSourceTrigger=PropertyChanged}" />
+
+            <Label Content="Numer rachunku bankowego (domyslny)" />
+            <TextBox Text="{Binding NrRachunku, UpdateSourceTrigger=PropertyChanged}" />
+
+            <TextBlock Text="Polaczenie z KSeF" FontSize="16" FontWeight="Bold" Margin="0,16,0,8" />
+
+            <Label Content="Srodowisko" />
+            <ComboBox ItemsSource="{Binding Srodowiska}" SelectedItem="{Binding Srodowisko}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Label Content="Token KSeF (wpisz, aby ustawic/zmienic)" />
+            <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
+            <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
+
+            <Button Content="Zapisz ustawienia" Command="{Binding ZapiszCommand}"
+                    HorizontalAlignment="Left" Margin="0,8,0,0" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

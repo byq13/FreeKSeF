@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>FreeKSeF.App</RootNamespace>
+    <AssemblyName>FreeKSeF</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FreeKSeF.Core\FreeKSeF.Core.csproj" />
+    <ProjectReference Include="..\FreeKSeF.Data\FreeKSeF.Data.csproj" />
+    <ProjectReference Include="..\FreeKSeF.Ksef\FreeKSeF.Ksef.csproj" />
+  </ItemGroup>
+
+</Project>

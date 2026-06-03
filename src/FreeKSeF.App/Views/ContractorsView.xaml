@@ -1,0 +1,48 @@
+<UserControl x:Class="FreeKSeF.App.Views.ContractorsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+             d:DataContext="{d:DesignInstance vm:ContractorsViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <DataGrid Grid.Column="0"
+                  ItemsSource="{Binding Kontrahenci}"
+                  SelectedItem="{Binding Wybrany}"
+                  IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nazwa" Binding="{Binding Nazwa}" Width="*" />
+                <DataGridTextColumn Header="NIP" Binding="{Binding Nip}" Width="120" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Column="2">
+            <TextBlock Text="Dane kontrahenta" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+
+            <Label Content="Nazwa" />
+            <TextBox Text="{Binding Wybrany.Nazwa, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" />
+
+            <Label Content="NIP (puste = osoba prywatna)" />
+            <TextBox Text="{Binding Wybrany.Nip, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" />
+
+            <Label Content="Adres — linia 1" />
+            <TextBox Text="{Binding Wybrany.AdresL1, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" />
+
+            <Label Content="Adres — linia 2" />
+            <TextBox Text="{Binding Wybrany.AdresL2, UpdateSourceTrigger=PropertyChanged, TargetNullValue=''}" />
+
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <Button Content="Nowy" Command="{Binding NowyCommand}" />
+                <Button Content="Zapisz" Command="{Binding ZapiszCommand}" />
+                <Button Content="Usun" Command="{Binding UsunCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

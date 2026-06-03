@@ -1,0 +1,62 @@
+<UserControl x:Class="FreeKSeF.App.Views.InvoicesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+             d:DataContext="{d:DesignInstance vm:InvoicesViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <DockPanel Margin="12">
+
+        <!-- Pasek narzedzi -->
+        <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
+            <WrapPanel>
+                <CheckBox Content="Sprzedaz" IsChecked="{Binding PokazSprzedaz}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <CheckBox Content="Zakup" IsChecked="{Binding PokazZakup}" VerticalAlignment="Center" Margin="0,0,16,0" />
+                <Button Content="Odswiez" Command="{Binding OdswiezCommand}" Margin="0,0,24,0" />
+
+                <TextBlock Text="Import zakupow z KSeF od:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
+                <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
+                <Button Content="Pobierz zakupy" Command="{Binding PobierzZakupyCommand}" />
+            </WrapPanel>
+        </Border>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="8" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0"
+                      ItemsSource="{Binding Faktury}"
+                      SelectedItem="{Binding Wybrana}"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Numer" Binding="{Binding Numer}" Width="*" />
+                    <DataGridTextColumn Header="Rodzaj" Binding="{Binding Kierunek, Converter={StaticResource EnumLabel}}" Width="80" />
+                    <DataGridTextColumn Header="Data" Binding="{Binding DataWystawienia, StringFormat=d}" Width="90" />
+                    <DataGridTextColumn Header="Kontrahent" Binding="{Binding KontrahentNazwa}" Width="*" />
+                    <DataGridTextColumn Header="Brutto" Binding="{Binding SumaBrutto, StringFormat=N2}" Width="90" />
+                    <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource EnumLabel}}" Width="110" />
+                    <DataGridTextColumn Header="Numer KSeF" Binding="{Binding NumerKsef}" Width="160" />
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <GridSplitter Grid.Column="1" Width="8" HorizontalAlignment="Stretch" Background="Transparent" />
+
+            <DockPanel Grid.Column="2">
+                <TextBlock DockPanel.Dock="Top" Text="Podglad XML (FA(3))" FontWeight="SemiBold" Margin="0,0,0,4" />
+                <TextBox Text="{Binding PodgladXml, Mode=OneWay}"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         FontSize="11"
+                         VerticalScrollBarVisibility="Auto"
+                         HorizontalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap" />
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

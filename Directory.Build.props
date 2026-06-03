@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Pozwala kompilowac projekty *-windows (WPF) takze poza Windows
+         (np. na Linuksie/CI). Na Windows wlasciwosc jest bez znaczenia.
+         Aplikacja WPF uruchamia sie oczywiscie tylko na Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>
