@@ -33,3 +33,13 @@ jobs:
 
       - name: Test
         run: dotnet test FreeKSeF.sln -c Release --no-build --verbosity normal
+
+      - name: Publish (samodzielny .exe Windows)
+        run: dotnet publish src/FreeKSeF.App/FreeKSeF.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Upload artefaktu (FreeKSeF.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeKSeF-win-x64
+          path: publish/FreeKSeF.exe
+          if-no-files-found: error

@@ -63,6 +63,7 @@ public sealed class InvoicesViewModel : ViewModelBase
         _zajety = true;
         try
         {
+            await AppServices.ZalogujZUstawienAsync();
             var faktury = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo);
             int dodane = 0;
             using var db = AppServices.Db();

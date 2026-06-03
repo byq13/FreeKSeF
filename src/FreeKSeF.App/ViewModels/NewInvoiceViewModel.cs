@@ -239,6 +239,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
 
         try
         {
+            await AppServices.ZalogujZUstawienAsync();
             var wynik = await AppServices.Ksef.WyslijFakture(System.Text.Encoding.UTF8.GetBytes(inv.Xml));
             using var db = AppServices.Db();
             var e = db.Invoices.Find(inv.Id)!;

@@ -5,6 +5,11 @@
     <ProjectReference Include="..\FreeKSeF.Data\FreeKSeF.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="KSeF.Client" Version="2.6.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
