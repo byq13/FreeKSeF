@@ -1,0 +1,33 @@
+# .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.user
+*.suo
+*.userprefs
+.vs/
+.vscode/
+*.dll
+*.pdb
+
+# Build output / publish
+publish/
+artifacts/
+*.nupkg
+
+# Bazy SQLite (lokalne dane / pliki projektowe migracji)
+*.db
+*.db-shm
+*.db-wal
+freeksef_design.db
+
+# Sekrety / lokalne ustawienia
+*.env
+appsettings.*.local.json
+
+# OS
+.DS_Store
+Thumbs.db

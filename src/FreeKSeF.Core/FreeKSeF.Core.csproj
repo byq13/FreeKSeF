@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>FreeKSeF.Core</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Oficjalne schematy XSD FA(3) i typy MF - osadzone, by walidacja dzialala offline -->
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\*.xsd" />
+  </ItemGroup>
+
+</Project>
