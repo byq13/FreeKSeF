@@ -64,17 +64,18 @@ i wymaga autoryzacji. Utwórz **Personal Access Token (classic)** z uprawnieniem
 
 ```bash
 # Linux/macOS
-export GITHUB_PACKAGES_USER="twoj-login-github"
-export GITHUB_PACKAGES_PAT="ghp_xxx"
+export NUGET_GH_USER="twoj-login-github"
+export NUGET_GH_PAT="ghp_xxx"
 ```
 ```powershell
 # Windows PowerShell
-setx GITHUB_PACKAGES_USER "twoj-login-github"
-setx GITHUB_PACKAGES_PAT  "ghp_xxx"
+setx NUGET_GH_USER "twoj-login-github"
+setx NUGET_GH_PAT  "ghp_xxx"
 ```
 
-Źródło pakietu jest już skonfigurowane w `nuget.config`. W CI dodaj sekret repo
-`GITHUB_PACKAGES_PAT`.
+Źródło pakietu jest już skonfigurowane w `nuget.config`. W CI dodaj **sekret repo
+`NUGET_GH_PAT`** (Settings → Secrets and variables → Actions). Uwaga: nazwa sekretu
+**nie może** zaczynać się od `GITHUB_` — ten prefiks jest zarezerwowany przez GitHuba.
 
 ## Licencja
 

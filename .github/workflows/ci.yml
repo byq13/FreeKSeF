@@ -23,10 +23,11 @@ jobs:
       - name: Restore
         run: dotnet restore FreeKSeF.sln
         env:
-          # Potrzebne dopiero po podlaczeniu pakietu KSeF.Client (GitHub Packages MF).
-          # Dodaj sekret repo GITHUB_PACKAGES_PAT (PAT z read:packages).
-          GITHUB_PACKAGES_USER: ${{ github.actor }}
-          GITHUB_PACKAGES_PAT: ${{ secrets.GITHUB_PACKAGES_PAT }}
+          # Pobranie pakietu KSeF.Client z GitHub Packages MF wymaga autoryzacji.
+          # Dodaj sekret repo NUGET_GH_PAT (PAT z read:packages).
+          # Uwaga: nazwa sekretu NIE moze zaczynac sie od "GITHUB_" (prefiks zarezerwowany).
+          NUGET_GH_USER: ${{ github.actor }}
+          NUGET_GH_PAT: ${{ secrets.NUGET_GH_PAT }}
 
       - name: Build
         run: dotnet build FreeKSeF.sln -c Release --no-restore
