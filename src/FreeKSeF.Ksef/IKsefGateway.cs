@@ -35,7 +35,11 @@ public interface IKsefGateway
     /// Pobiera faktury zakupu (gdzie jestesmy nabywca) z dowolnego zakresu dat -
     /// bez ograniczenia 30 dni z Aplikacji Podatnika.
     /// </summary>
-    Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(DateTime od, DateTime @do, CancellationToken ct = default);
+    Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(
+        DateTime od,
+        DateTime @do,
+        Func<FakturaZKsef, Task>? poPobraniu = null,
+        CancellationToken ct = default);
 }
 
 /// <summary>Wyjatek sygnalizujacy problem komunikacji z KSeF.</summary>

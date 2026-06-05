@@ -20,6 +20,8 @@ namespace FreeKSeF.Ksef;
 /// </summary>
 public sealed class RealKsefGateway : IKsefGateway
 {
+    private const int OpoznienieLimituKsefMs = 6_000;
+
     private IKSeFClient? _client;
     private ICryptographyService? _crypto;
     private string? _accessToken;
@@ -37,6 +39,8 @@ public sealed class RealKsefGateway : IKsefGateway
 
             _client = provider.GetRequiredService<IKSeFClient>();
             _crypto = provider.GetRequiredService<ICryptographyService>();
+            await _crypto.WarmupAsync(ct);
+
             var auth = provider.GetRequiredService<IAuthCoordinator>();
             _nip = polaczenie.NipPodatnika;
 
@@ -132,21 +136,27 @@ public sealed class RealKsefGateway : IKsefGateway
         // UPO pobieramy w ramach sesji w WyslijFakture; samodzielne pobranie wymaga kontekstu sesji.
         => Task.FromResult<string?>(null);
 
-    public async Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(DateTime od, DateTime @do, CancellationToken ct = default)
+    public async Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(
+        DateTime od,
+        DateTime @do,
+        Func<FakturaZKsef, Task>? poPobraniu = null,
+        CancellationToken ct = default)
     {
         var (client, _, token) = Wymagaj();
         var wynik = new List<FakturaZKsef>();
 
         try
         {
+            await Task.Delay(OpoznienieLimituKsefMs, ct);
+
             var filtry = new InvoiceQueryFilters
             {
                 SubjectType = InvoiceSubjectType.Subject2, // jestesmy nabywca
                 DateRange = new DateRange
                 {
                     DateType = DateType.Issue,
-                    From = new DateTimeOffset(od.Date, TimeSpan.Zero),
-                    To = new DateTimeOffset(@do.Date.AddDays(1).AddTicks(-1), TimeSpan.Zero),
+                    From = PoczatekDniaUtc(od),
+                    To = KoniecDniaUtc(@do),
                 },
             };
 
@@ -161,11 +171,16 @@ public sealed class RealKsefGateway : IKsefGateway
                 foreach (var meta in faktury)
                 {
                     if (string.IsNullOrEmpty(meta.KsefNumber)) continue;
+                    await Task.Delay(OpoznienieLimituKsefMs, ct);
                     var xml = await client.GetInvoiceAsync(meta.KsefNumber, token, ct);
-                    wynik.Add(new FakturaZKsef(meta.KsefNumber, meta.AcquisitionDate.UtcDateTime, xml));
+                    var faktura = new FakturaZKsef(meta.KsefNumber, meta.AcquisitionDate.UtcDateTime, xml);
+                    wynik.Add(faktura);
+                    if (poPobraniu is not null)
+                        await poPobraniu(faktura);
                 }
 
                 if (!strona.HasMore) break;
+                await Task.Delay(OpoznienieLimituKsefMs, ct);
                 offset += rozmiarStrony;
             }
 
@@ -182,6 +197,12 @@ public sealed class RealKsefGateway : IKsefGateway
         try { return await client.GetSessionInvoiceUpoByReferenceNumberAsync(sesjaRef, fakturaRef, token, ct); }
         catch { return null; }
     }
+
+    private static DateTimeOffset PoczatekDniaUtc(DateTime data)
+        => new(data.Year, data.Month, data.Day, 0, 0, 0, TimeSpan.Zero);
+
+    private static DateTimeOffset KoniecDniaUtc(DateTime data)
+        => PoczatekDniaUtc(data).AddDays(1).AddTicks(-1);
 
     private (IKSeFClient client, ICryptographyService crypto, string token) Wymagaj()
     {

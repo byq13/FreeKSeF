@@ -10,17 +10,20 @@
 
         <!-- Pasek narzedzi -->
         <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
-            <WrapPanel>
-                <CheckBox Content="Sprzedaz" IsChecked="{Binding PokazSprzedaz}" VerticalAlignment="Center" Margin="0,0,12,0" />
-                <CheckBox Content="Zakup" IsChecked="{Binding PokazZakup}" VerticalAlignment="Center" Margin="0,0,16,0" />
-                <Button Content="Odswiez" Command="{Binding OdswiezCommand}" Margin="0,0,24,0" />
+            <StackPanel>
+                <WrapPanel>
+                    <CheckBox Content="Sprzedaz" IsChecked="{Binding PokazSprzedaz}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                    <CheckBox Content="Zakup" IsChecked="{Binding PokazZakup}" VerticalAlignment="Center" Margin="0,0,16,0" />
+                    <Button Content="Odswiez" Command="{Binding OdswiezCommand}" Margin="0,0,24,0" />
 
-                <TextBlock Text="Import zakupow z KSeF od:" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
-                <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
-                <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
-                <Button Content="Pobierz zakupy" Command="{Binding PobierzZakupyCommand}" />
-            </WrapPanel>
+                    <TextBlock Text="Import zakupow z KSeF od:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
+                    <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
+                    <Button Content="Pobierz zakupy" Command="{Binding PobierzZakupyCommand}" />
+                </WrapPanel>
+                <TextBlock Text="{Binding ImportStatus}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0" />
+            </StackPanel>
         </Border>
 
         <Grid>

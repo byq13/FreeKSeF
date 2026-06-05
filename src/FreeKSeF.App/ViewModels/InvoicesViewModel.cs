@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
 using FreeKSeF.Data;
@@ -17,6 +18,7 @@ public sealed class InvoicesViewModel : ViewModelBase
     private bool _pokazSprzedaz = true;
     private bool _pokazZakup = true;
     private bool _zajety;
+    private string _importStatus = string.Empty;
 
     public InvoicesViewModel()
     {
@@ -40,6 +42,7 @@ public sealed class InvoicesViewModel : ViewModelBase
 
     public DateTime ImportOd { get => _importOd; set => SetField(ref _importOd, value); }
     public DateTime ImportDo { get => _importDo; set => SetField(ref _importDo, value); }
+    public string ImportStatus { get => _importStatus; set => SetField(ref _importStatus, value); }
 
     public RelayCommand OdswiezCommand { get; }
     public RelayCommand PobierzZakupyCommand { get; }
@@ -61,30 +64,70 @@ public sealed class InvoicesViewModel : ViewModelBase
     private async void PobierzZakupy()
     {
         _zajety = true;
+        CommandManager.InvalidateRequerySuggested();
+        int pobrane = 0;
+        int dodane = 0;
+        int pominiete = 0;
+
         try
         {
+            ImportStatus = "Logowanie do KSeF...";
             await AppServices.ZalogujZUstawienAsync();
-            var faktury = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo);
-            int dodane = 0;
-            using var db = AppServices.Db();
-            foreach (var f in faktury)
+            ImportStatus = "Pobieranie faktur z KSeF...";
+
+            var faktury = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo, f =>
             {
-                if (db.Invoices.Any(i => i.NumerKsef == f.NumerKsef)) continue;
-                db.Invoices.Add(FakturaMapping.ZakupZXml(f.Xml, f.NumerKsef));
-                dodane++;
-            }
-            db.SaveChanges();
+                pobrane++;
+                if (ZapiszPobranaFakture(f))
+                    dodane++;
+                else
+                    pominiete++;
+
+                ImportStatus = $"Pobrano: {pobrane}, dodano: {dodane}, pominieto duplikaty: {pominiete}.";
+                return Task.CompletedTask;
+            });
+
             Odswiez();
             MessageBox.Show($"Pobrano {faktury.Count} faktur(y), dodano nowych: {dodane}.", "Import zakupow",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Ksef.KsefException ex)
         {
-            MessageBox.Show(ex.Message, "KSeF niedostepny", MessageBoxButton.OK, MessageBoxImage.Warning);
+            Odswiez();
+            MessageBox.Show(
+                $"{ex.Message}\n\nDo tego momentu pobrano: {pobrane}, dodano: {dodane}, pominieto duplikaty: {pominiete}.",
+                "KSeF niedostepny",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
         finally
         {
             _zajety = false;
+            if (pobrane == 0 && string.IsNullOrEmpty(ImportStatus) == false)
+                ImportStatus = "Import przerwany bez pobranych faktur.";
+            CommandManager.InvalidateRequerySuggested();
         }
+    }
+
+    private bool ZapiszPobranaFakture(Ksef.FakturaZKsef faktura)
+    {
+        using var db = AppServices.Db();
+        if (db.Invoices.Any(i => i.NumerKsef == faktura.NumerKsef))
+            return false;
+
+        var inv = FakturaMapping.ZakupZXml(faktura.Xml, faktura.NumerKsef);
+        db.Invoices.Add(inv);
+        db.SaveChanges();
+
+        if (PokazZakup)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Faktury.Insert(0, inv);
+                Wybrana = inv;
+            });
+        }
+
+        return true;
     }
 }

@@ -20,6 +20,7 @@ public sealed class SettingsViewModel : ViewModelBase
     public SettingsViewModel()
     {
         ZapiszCommand = new RelayCommand(Zapisz);
+        TestujPolaczenieCommand = new RelayCommand(TestujPolaczenie);
         Wczytaj();
     }
 
@@ -41,6 +42,7 @@ public sealed class SettingsViewModel : ViewModelBase
     public string NowyToken { private get; set; } = string.Empty;
 
     public RelayCommand ZapiszCommand { get; }
+    public RelayCommand TestujPolaczenieCommand { get; }
 
     private void Wczytaj()
     {
@@ -88,4 +90,56 @@ public sealed class SettingsViewModel : ViewModelBase
 
         MessageBox.Show("Zapisano ustawienia.", "FreeKSeF", MessageBoxButton.OK, MessageBoxImage.Information);
     }
+
+    private async void TestujPolaczenie()
+    {
+        if (string.IsNullOrWhiteSpace(Nip))
+        {
+            MessageBox.Show("Podaj NIP firmy.", "Brak danych", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var token = NowyToken.Trim();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            using var db = AppServices.Db();
+            var c = _id > 0
+                ? db.Companies.FirstOrDefault(x => x.Id == _id)
+                : db.Companies.OrderBy(x => x.Id).FirstOrDefault();
+            token = SecretProtector.Unprotect(c?.KsefTokenProtected);
+        }
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            MessageBox.Show("Brak tokenu KSeF. Wpisz token albo zapisz go w ustawieniach.", "Brak danych",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var ok = await AppServices.Ksef.ZalogujAsync(new Ksef.KsefPolaczenie(Srodowisko, Nip.Trim(), token));
+            if (!ok)
+            {
+                MessageBox.Show("Logowanie do KSeF nie powiodlo sie.", "Test KSeF",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            MessageBox.Show($"Polaczenie z KSeF dziala. Srodowisko: {EtykietaSrodowiska(Srodowisko)}.",
+                "Test KSeF", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Ksef.KsefException ex)
+        {
+            MessageBox.Show(ex.Message, "Test KSeF", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private static string EtykietaSrodowiska(Srodowisko srodowisko) => srodowisko switch
+    {
+        Srodowisko.Test => "testowe",
+        Srodowisko.Demo => "demo",
+        Srodowisko.Produkcja => "produkcyjne",
+        _ => srodowisko.ToString(),
+    };
 }

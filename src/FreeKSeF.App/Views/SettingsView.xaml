@@ -40,8 +40,10 @@
             <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
             <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
 
-            <Button Content="Zapisz ustawienia" Command="{Binding ZapiszCommand}"
-                    HorizontalAlignment="Left" Margin="0,8,0,0" />
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <Button Content="Zapisz ustawienia" Command="{Binding ZapiszCommand}" />
+                <Button Content="Testuj polaczenie" Command="{Binding TestujPolaczenieCommand}" Margin="8,0,0,0" />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
