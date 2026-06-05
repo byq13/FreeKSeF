@@ -12,6 +12,10 @@ namespace FreeKSeF.App.ViewModels;
 /// <summary>Lista faktur (wystawionych i zaimportowanych), podglad oraz import zakupow z KSeF.</summary>
 public sealed class InvoicesViewModel : ViewModelBase
 {
+    // KSeF limituje do ~64 zapytan/godzine. Ograniczamy liczbe pelnych faktur
+    // pobieranych w jednym imporcie, zostawiajac zapas na metadane i wysylke.
+    private const int LimitPobranNaImport = 50;
+
     private Invoice? _wybrana;
     private DateTime _importOd = DateTime.Today.AddMonths(-3);
     private DateTime _importDo = DateTime.Today;
@@ -65,37 +69,40 @@ public sealed class InvoicesViewModel : ViewModelBase
     {
         _zajety = true;
         CommandManager.InvalidateRequerySuggested();
-        int pobrane = 0;
         int dodane = 0;
-        int pominiete = 0;
 
         try
         {
             ImportStatus = "Logowanie do KSeF...";
             await AppServices.ZalogujZUstawienAsync();
-            ImportStatus = "Pobieranie faktur z KSeF...";
 
-            var faktury = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo, f =>
+            // Numery KSeF faktur, ktore juz mamy - NIE pobieramy ich ponownie (oszczednosc zetonow).
+            HashSet<string> posiadane;
+            using (var db = AppServices.Db())
+                posiadane = db.Invoices
+                    .Where(i => i.NumerKsef != null)
+                    .Select(i => i.NumerKsef!)
+                    .ToHashSet();
+
+            ImportStatus = "Sprawdzanie listy faktur w KSeF...";
+            var wynik = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo, posiadane, LimitPobranNaImport, f =>
             {
-                pobrane++;
                 if (ZapiszPobranaFakture(f))
                     dodane++;
-                else
-                    pominiete++;
-
-                ImportStatus = $"Pobrano: {pobrane}, dodano: {dodane}, pominieto duplikaty: {pominiete}.";
+                ImportStatus = $"Pobieranie nowych faktur: {dodane}...";
                 return Task.CompletedTask;
             });
 
             Odswiez();
-            MessageBox.Show($"Pobrano {faktury.Count} faktur(y), dodano nowych: {dodane}.", "Import zakupow",
+            ImportStatus = $"Znaleziono {wynik.Znalezione}, juz posiadane {wynik.JuzPosiadane}, pobrane {wynik.Pobrano}.";
+            MessageBox.Show(PodsumowanieImportu(wynik), "Import zakupow",
                 MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Ksef.KsefException ex)
         {
             Odswiez();
             MessageBox.Show(
-                $"{ex.Message}\n\nDo tego momentu pobrano: {pobrane}, dodano: {dodane}, pominieto duplikaty: {pominiete}.",
+                $"{ex.Message}\n\nDo tego momentu dodano nowych faktur: {dodane}.",
                 "KSeF niedostepny",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
@@ -103,10 +110,25 @@ public sealed class InvoicesViewModel : ViewModelBase
         finally
         {
             _zajety = false;
-            if (pobrane == 0 && string.IsNullOrEmpty(ImportStatus) == false)
-                ImportStatus = "Import przerwany bez pobranych faktur.";
             CommandManager.InvalidateRequerySuggested();
         }
+    }
+
+    private static string PodsumowanieImportu(Ksef.WynikImportuZakupow w)
+    {
+        var tekst =
+            $"Znaleziono w KSeF: {w.Znalezione}\n" +
+            $"Juz posiadane (pominiete, bez pobierania): {w.JuzPosiadane}\n" +
+            $"Pobrane teraz: {w.Pobrano}";
+
+        if (w.LimitOsiagniety)
+            tekst +=
+                $"\n\nOsiagnieto limit pobran na jeden import ({LimitPobranNaImport}).\n" +
+                $"Pozostalo do pobrania: {w.PozostaloDoPobrania}.\n" +
+                "KSeF pozwala na ok. 64 zapytania na godzine - dokoncz import za jakis czas " +
+                "(juz pobrane faktury nie beda pobierane ponownie).";
+
+        return tekst;
     }
 
     private bool ZapiszPobranaFakture(Ksef.FakturaZKsef faktura)

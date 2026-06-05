@@ -136,60 +136,86 @@ public sealed class RealKsefGateway : IKsefGateway
         // UPO pobieramy w ramach sesji w WyslijFakture; samodzielne pobranie wymaga kontekstu sesji.
         => Task.FromResult<string?>(null);
 
-    public async Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(
+    public async Task<WynikImportuZakupow> PobierzZakupyAsync(
         DateTime od,
         DateTime @do,
+        ISet<string> juzPosiadane,
+        int limitPobran,
         Func<FakturaZKsef, Task>? poPobraniu = null,
         CancellationToken ct = default)
     {
         var (client, _, token) = Wymagaj();
-        var wynik = new List<FakturaZKsef>();
+        juzPosiadane ??= new HashSet<string>();
+        var pobrane = new List<FakturaZKsef>();
 
         try
         {
-            await Task.Delay(OpoznienieLimituKsefMs, ct);
+            // 1) Tanie metadane - same numery KSeF (bez pobierania pelnych faktur).
+            var metadane = await PobierzMetadaneAsync(client, token, od, @do, ct);
+            var znalezione = metadane.Count;
 
-            var filtry = new InvoiceQueryFilters
+            // 2) Pomijamy te, ktore juz mamy lokalnie - tego nie pobieramy ponownie.
+            var brakujace = metadane.Where(m => !juzPosiadane.Contains(m.Numer)).ToList();
+            var juz = znalezione - brakujace.Count;
+
+            // 3) Pobieramy pelne faktury TYLKO dla brakujacych i tylko do limitu zetonow.
+            var doPobrania = limitPobran > 0 ? Math.Min(brakujace.Count, limitPobran) : brakujace.Count;
+            for (var i = 0; i < doPobrania; i++)
             {
-                SubjectType = InvoiceSubjectType.Subject2, // jestesmy nabywca
-                DateRange = new DateRange
-                {
-                    DateType = DateType.Issue,
-                    From = PoczatekDniaUtc(od),
-                    To = KoniecDniaUtc(@do),
-                },
-            };
-
-            int offset = 0;
-            const int rozmiarStrony = 100;
-            while (true)
-            {
-                var strona = await client.QueryInvoiceMetadataAsync(filtry, token, offset, rozmiarStrony, SortOrder.Desc, ct);
-                var faktury = strona.Invoices;
-                if (faktury is null || faktury.Count == 0) break;
-
-                foreach (var meta in faktury)
-                {
-                    if (string.IsNullOrEmpty(meta.KsefNumber)) continue;
-                    await Task.Delay(OpoznienieLimituKsefMs, ct);
-                    var xml = await client.GetInvoiceAsync(meta.KsefNumber, token, ct);
-                    var faktura = new FakturaZKsef(meta.KsefNumber, meta.AcquisitionDate.UtcDateTime, xml);
-                    wynik.Add(faktura);
-                    if (poPobraniu is not null)
-                        await poPobraniu(faktura);
-                }
-
-                if (!strona.HasMore) break;
+                ct.ThrowIfCancellationRequested();
                 await Task.Delay(OpoznienieLimituKsefMs, ct);
-                offset += rozmiarStrony;
+
+                var m = brakujace[i];
+                var xml = await client.GetInvoiceAsync(m.Numer, token, ct);
+                var faktura = new FakturaZKsef(m.Numer, m.Data, xml);
+                pobrane.Add(faktura);
+                if (poPobraniu is not null)
+                    await poPobraniu(faktura);
             }
 
-            return wynik;
+            var pozostalo = brakujace.Count - pobrane.Count;
+            return new WynikImportuZakupow(pobrane, znalezione, juz, pobrane.Count, pozostalo);
         }
         catch (Exception ex) when (ex is not KsefException)
         {
             throw new KsefException("Pobieranie faktur zakupu z KSeF nie powiodlo sie: " + ex.Message, ex);
         }
+    }
+
+    /// <summary>Pobiera same metadane faktur zakupu (numer KSeF + data) z zakresu dat.</summary>
+    private static async Task<List<(string Numer, DateTime Data)>> PobierzMetadaneAsync(
+        IKSeFClient client, string token, DateTime od, DateTime @do, CancellationToken ct)
+    {
+        var wynik = new List<(string, DateTime)>();
+        var filtry = new InvoiceQueryFilters
+        {
+            SubjectType = InvoiceSubjectType.Subject2, // jestesmy nabywca
+            DateRange = new DateRange
+            {
+                DateType = DateType.Issue,
+                From = PoczatekDniaUtc(od),
+                To = KoniecDniaUtc(@do),
+            },
+        };
+
+        int offset = 0;
+        const int rozmiarStrony = 100;
+        while (true)
+        {
+            var strona = await client.QueryInvoiceMetadataAsync(filtry, token, offset, rozmiarStrony, SortOrder.Desc, ct);
+            var faktury = strona.Invoices;
+            if (faktury is null || faktury.Count == 0) break;
+
+            foreach (var meta in faktury)
+                if (!string.IsNullOrEmpty(meta.KsefNumber))
+                    wynik.Add((meta.KsefNumber, meta.AcquisitionDate.UtcDateTime));
+
+            if (!strona.HasMore) break;
+            await Task.Delay(OpoznienieLimituKsefMs, ct);
+            offset += rozmiarStrony;
+        }
+
+        return wynik;
     }
 
     private static async Task<string?> PobierzUpoBezpiecznie(IKSeFClient client, string sesjaRef, string fakturaRef, string token, CancellationToken ct)

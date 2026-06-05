@@ -17,6 +17,20 @@ public sealed record WynikWysylki(
 public sealed record FakturaZKsef(string NumerKsef, DateTime DataPrzyjecia, string Xml);
 
 /// <summary>
+/// Podsumowanie importu zakupow - pozwala UI pokazac ile zetonow KSeF zuzyto i ile zostalo do pobrania.
+/// </summary>
+public sealed record WynikImportuZakupow(
+    IReadOnlyList<FakturaZKsef> Pobrane,
+    int Znalezione,
+    int JuzPosiadane,
+    int Pobrano,
+    int PozostaloDoPobrania)
+{
+    /// <summary>Czy nie pobrano wszystkich brakujacych (np. z powodu limitu zetonow).</summary>
+    public bool LimitOsiagniety => PozostaloDoPobrania > 0;
+}
+
+/// <summary>
 /// Kontrakt integracji z Krajowym Systemem e-Faktur.
 /// Implementacja produkcyjna opiera sie na oficjalnym kliencie KSeF.Client (MF).
 /// </summary>
@@ -34,10 +48,17 @@ public interface IKsefGateway
     /// <summary>
     /// Pobiera faktury zakupu (gdzie jestesmy nabywca) z dowolnego zakresu dat -
     /// bez ograniczenia 30 dni z Aplikacji Podatnika.
+    /// Najpierw pobiera tanie metadane (numery KSeF), a pelne faktury sciaga TYLKO
+    /// dla numerow spoza <paramref name="juzPosiadane"/> i tylko do limitu
+    /// <paramref name="limitPobran"/> - by nie marnowac limitu 64 zapytan/h KSeF.
     /// </summary>
-    Task<IReadOnlyList<FakturaZKsef>> PobierzZakupyAsync(
+    /// <param name="juzPosiadane">Numery KSeF faktur, ktore juz mamy lokalnie (pomijane przy pobieraniu).</param>
+    /// <param name="limitPobran">Maksymalna liczba pelnych faktur do pobrania w tym wywolaniu (0 = bez limitu).</param>
+    Task<WynikImportuZakupow> PobierzZakupyAsync(
         DateTime od,
         DateTime @do,
+        ISet<string> juzPosiadane,
+        int limitPobran,
         Func<FakturaZKsef, Task>? poPobraniu = null,
         CancellationToken ct = default);
 }
