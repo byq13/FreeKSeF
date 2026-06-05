@@ -8,13 +8,23 @@
              mc:Ignorable="d">
     <DockPanel Margin="12">
         <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
-            <WrapPanel>
-                <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
-                        Background="#1F2937" Foreground="White" Margin="0,0,24,0" />
-                <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
-                <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
-                <Button Content="Usuń" Command="{Binding UsunCommand}" />
-            </WrapPanel>
+            <StackPanel>
+                <WrapPanel>
+                    <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
+                            Background="#1F2937" Foreground="White" Margin="0,0,24,0" />
+                    <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
+                    <Button Content="Usuń" Command="{Binding UsunCommand}" />
+                </WrapPanel>
+                <WrapPanel Margin="0,8,0,0">
+                    <TextBlock Text="Pobierz sprzedaż z KSeF — od:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
+                    <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
+                    <Button Content="Pobierz sprzedaż" Command="{Binding PobierzSprzedazCommand}" />
+                </WrapPanel>
+                <TextBlock Text="{Binding ImportStatus}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0" />
+            </StackPanel>
         </Border>
 
         <DataGrid ItemsSource="{Binding Faktury}" SelectedItem="{Binding Wybrana}" IsReadOnly="True">

@@ -52,11 +52,16 @@ public static class FakturaMapping
         return inv;
     }
 
-    /// <summary>
-    /// Buduje encje faktury zakupu z surowego XML pobranego z KSeF.
-    /// Dane podsumowujace odczytywane sa z modelu FA(3).
-    /// </summary>
+    /// <summary>Buduje encje faktury zakupu z XML pobranego z KSeF.</summary>
     public static Invoice ZakupZXml(string xml, string? numerKsef = null)
+        => ZImportu(xml, KierunekFaktury.Zakup, numerKsef);
+
+    /// <summary>
+    /// Buduje encje zaimportowanej faktury z surowego XML pobranego z KSeF.
+    /// Kontrahent zalezy od kierunku: dla zakupu - sprzedawca (Podmiot1),
+    /// dla sprzedazy - nabywca (Podmiot2). Dane podsumowujace z modelu FA(3).
+    /// </summary>
+    public static Invoice ZImportu(string xml, KierunekFaktury kierunek, string? numerKsef = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(xml);
         var fa = Fa3Serializer.FromXml(xml);
@@ -70,16 +75,20 @@ public static class FakturaMapping
                       + Sum(fa.Fa.P142Specified, fa.Fa.P142)
                       + Sum(fa.Fa.P143Specified, fa.Fa.P143);
 
+        var (nazwa, nip) = kierunek == KierunekFaktury.Zakup
+            ? (fa.Podmiot1.DaneIdentyfikacyjne.Nazwa, fa.Podmiot1.DaneIdentyfikacyjne.Nip)
+            : (fa.Podmiot2.DaneIdentyfikacyjne.Nazwa, fa.Podmiot2.DaneIdentyfikacyjne.Nip);
+
         return new Invoice
         {
-            Kierunek = KierunekFaktury.Zakup,
+            Kierunek = kierunek,
             Status = StatusFaktury.Zaimportowana,
             Numer = fa.Fa.P2,
             NumerKsef = numerKsef,
             DataWystawienia = fa.Fa.P1,
             DataSprzedazy = fa.Fa.P6Specified ? fa.Fa.P6 : null,
-            KontrahentNip = fa.Podmiot1.DaneIdentyfikacyjne.Nip,
-            KontrahentNazwa = fa.Podmiot1.DaneIdentyfikacyjne.Nazwa,
+            KontrahentNip = nip,
+            KontrahentNazwa = nazwa,
             Waluta = fa.Fa.KodWaluty.ToString(),
             SumaNetto = netto,
             SumaVat = vat,

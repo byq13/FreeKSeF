@@ -13,13 +13,23 @@ public sealed record WynikWysylki(
     string? UpoXml,
     string? Blad);
 
-/// <summary>Faktura zakupu pobrana z KSeF.</summary>
+/// <summary>Faktura pobrana z KSeF.</summary>
 public sealed record FakturaZKsef(string NumerKsef, DateTime DataPrzyjecia, string Xml);
 
+/// <summary>Rola naszego podmiotu na fakturze - decyduje, ktore faktury pobieramy z KSeF.</summary>
+public enum StronaRola
+{
+    /// <summary>Jestesmy nabywca - faktury zakupu.</summary>
+    Nabywca,
+
+    /// <summary>Jestesmy sprzedawca - faktury sprzedazy.</summary>
+    Sprzedawca,
+}
+
 /// <summary>
-/// Podsumowanie importu zakupow - pozwala UI pokazac ile zetonow KSeF zuzyto i ile zostalo do pobrania.
+/// Podsumowanie importu - pozwala UI pokazac ile zetonow KSeF zuzyto i ile zostalo do pobrania.
 /// </summary>
-public sealed record WynikImportuZakupow(
+public sealed record WynikImportu(
     IReadOnlyList<FakturaZKsef> Pobrane,
     int Znalezione,
     int JuzPosiadane,
@@ -46,15 +56,17 @@ public interface IKsefGateway
     Task<string?> PobierzUpoAsync(string numerReferencyjny, CancellationToken ct = default);
 
     /// <summary>
-    /// Pobiera faktury zakupu (gdzie jestesmy nabywca) z dowolnego zakresu dat -
-    /// bez ograniczenia 30 dni z Aplikacji Podatnika.
-    /// Najpierw pobiera tanie metadane (numery KSeF), a pelne faktury sciaga TYLKO
-    /// dla numerow spoza <paramref name="juzPosiadane"/> i tylko do limitu
-    /// <paramref name="limitPobran"/> - by nie marnowac limitu 64 zapytan/h KSeF.
+    /// Pobiera faktury z KSeF wg roli (zakup gdy nabywca, sprzedaz gdy sprzedawca) z dowolnego
+    /// zakresu dat - bez ograniczenia 30 dni z Aplikacji Podatnika. Najpierw pobiera tanie
+    /// metadane (numery KSeF), a pelne faktury sciaga TYLKO dla numerow spoza
+    /// <paramref name="juzPosiadane"/> i tylko do limitu <paramref name="limitPobran"/> -
+    /// by nie marnowac limitu 64 zapytan/h KSeF.
     /// </summary>
+    /// <param name="rola">Czy szukamy faktur, gdzie jestesmy nabywca, czy sprzedawca.</param>
     /// <param name="juzPosiadane">Numery KSeF faktur, ktore juz mamy lokalnie (pomijane przy pobieraniu).</param>
     /// <param name="limitPobran">Maksymalna liczba pelnych faktur do pobrania w tym wywolaniu (0 = bez limitu).</param>
-    Task<WynikImportuZakupow> PobierzZakupyAsync(
+    Task<WynikImportu> PobierzFakturyAsync(
+        StronaRola rola,
         DateTime od,
         DateTime @do,
         ISet<string> juzPosiadane,

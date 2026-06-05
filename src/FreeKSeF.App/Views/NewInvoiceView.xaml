@@ -37,7 +37,15 @@
                     <Label Content="Nazwa" />
                     <TextBox Text="{Binding NabywcaNazwa, UpdateSourceTrigger=PropertyChanged}" />
                     <Label Content="NIP (puste = osoba prywatna)" />
-                    <TextBox Text="{Binding NabywcaNip, UpdateSourceTrigger=PropertyChanged}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{Binding NabywcaNip, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Grid.Column="1" Content="Pobierz z GUS" Command="{Binding PobierzZGusCommand}"
+                                Margin="8,2,0,6" VerticalAlignment="Center" />
+                    </Grid>
                     <Label Content="Adres — linia 1" />
                     <TextBox Text="{Binding NabywcaAdresL1, UpdateSourceTrigger=PropertyChanged}" />
                     <Label Content="Adres — linia 2" />

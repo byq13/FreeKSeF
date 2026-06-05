@@ -47,7 +47,7 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
                 posiadane = db.Invoices.Where(i => i.NumerKsef != null).Select(i => i.NumerKsef!).ToHashSet();
 
             ImportStatus = "Sprawdzanie listy faktur w KSeF...";
-            var wynik = await AppServices.Ksef.PobierzZakupyAsync(ImportOd, ImportDo, posiadane, LimitPobranNaImport, f =>
+            var wynik = await AppServices.Ksef.PobierzFakturyAsync(Ksef.StronaRola.Nabywca, ImportOd, ImportDo, posiadane, LimitPobranNaImport, f =>
             {
                 if (ZapiszPobranaFakture(f)) dodane++;
                 ImportStatus = $"Pobieranie nowych faktur: {dodane}...";
@@ -85,7 +85,7 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
         return true;
     }
 
-    private static string Podsumowanie(Ksef.WynikImportuZakupow w)
+    private static string Podsumowanie(Ksef.WynikImportu w)
     {
         var tekst =
             $"Znaleziono w KSeF: {w.Znalezione}\n" +

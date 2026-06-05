@@ -136,7 +136,8 @@ public sealed class RealKsefGateway : IKsefGateway
         // UPO pobieramy w ramach sesji w WyslijFakture; samodzielne pobranie wymaga kontekstu sesji.
         => Task.FromResult<string?>(null);
 
-    public async Task<WynikImportuZakupow> PobierzZakupyAsync(
+    public async Task<WynikImportu> PobierzFakturyAsync(
+        StronaRola rola,
         DateTime od,
         DateTime @do,
         ISet<string> juzPosiadane,
@@ -151,7 +152,7 @@ public sealed class RealKsefGateway : IKsefGateway
         try
         {
             // 1) Tanie metadane - same numery KSeF (bez pobierania pelnych faktur).
-            var metadane = await PobierzMetadaneAsync(client, token, od, @do, ct);
+            var metadane = await PobierzMetadaneAsync(client, token, rola, od, @do, ct);
             var znalezione = metadane.Count;
 
             // 2) Pomijamy te, ktore juz mamy lokalnie - tego nie pobieramy ponownie.
@@ -174,22 +175,23 @@ public sealed class RealKsefGateway : IKsefGateway
             }
 
             var pozostalo = brakujace.Count - pobrane.Count;
-            return new WynikImportuZakupow(pobrane, znalezione, juz, pobrane.Count, pozostalo);
+            return new WynikImportu(pobrane, znalezione, juz, pobrane.Count, pozostalo);
         }
         catch (Exception ex) when (ex is not KsefException)
         {
-            throw new KsefException("Pobieranie faktur zakupu z KSeF nie powiodlo sie: " + ex.Message, ex);
+            throw new KsefException("Pobieranie faktur z KSeF nie powiodlo sie: " + ex.Message, ex);
         }
     }
 
-    /// <summary>Pobiera same metadane faktur zakupu (numer KSeF + data) z zakresu dat.</summary>
+    /// <summary>Pobiera same metadane faktur (numer KSeF + data) z zakresu dat dla danej roli.</summary>
     private static async Task<List<(string Numer, DateTime Data)>> PobierzMetadaneAsync(
-        IKSeFClient client, string token, DateTime od, DateTime @do, CancellationToken ct)
+        IKSeFClient client, string token, StronaRola rola, DateTime od, DateTime @do, CancellationToken ct)
     {
         var wynik = new List<(string, DateTime)>();
         var filtry = new InvoiceQueryFilters
         {
-            SubjectType = InvoiceSubjectType.Subject2, // jestesmy nabywca
+            // Subject1 = jestesmy sprzedawca, Subject2 = jestesmy nabywca.
+            SubjectType = rola == StronaRola.Sprzedawca ? InvoiceSubjectType.Subject1 : InvoiceSubjectType.Subject2,
             DateRange = new DateRange
             {
                 DateType = DateType.Issue,

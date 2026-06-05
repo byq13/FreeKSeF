@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Input;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
 using FreeKSeF.App.Views;
@@ -28,6 +29,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     private DateTime? _terminPlatnosci = DateTime.Today.AddDays(14);
     private string _nrRachunku = string.Empty;
     private Contractor? _wybranyKontrahent;
+    private bool _zajetyGus;
 
     public NewInvoiceViewModel()
     {
@@ -37,6 +39,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         ZapiszCommand = new RelayCommand(Zapisz);
         ZapiszIPodgladCommand = new RelayCommand(ZapiszIPodglad);
         EksportujXmlCommand = new RelayCommand(EksportujXml);
+        PobierzZGusCommand = new RelayCommand(PobierzZGus, () => !_zajetyGus);
         Odswiez();
     }
 
@@ -81,6 +84,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public RelayCommand ZapiszCommand { get; }
     public RelayCommand ZapiszIPodgladCommand { get; }
     public RelayCommand EksportujXmlCommand { get; }
+    public RelayCommand PobierzZGusCommand { get; }
 
     /// <summary>Przeladowuje dane pomocnicze (kontrahenci, nr konta, propozycja numeru).</summary>
     public void Odswiez()
@@ -199,6 +203,8 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         var inv = FakturaMapping.ToEntity(model);
         inv.Status = status;
         db.Invoices.Add(inv);
+
+        DopiszKontrahenta(db, model.Nabywca);
         db.SaveChanges();
 
         if (!string.IsNullOrEmpty(komunikat))
@@ -266,6 +272,58 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         Pozycje.Clear();
 
         Odswiez(); // proponuje nowy numer i odswieza slownik kontrahentow
+    }
+
+    private async void PobierzZGus()
+    {
+        if (!Core.Models.Nip.Waliduj(NabywcaNip))
+        {
+            MessageBox.Show("Wpisz poprawny NIP nabywcy (10 cyfr). Myslniki i spacje sa OK.", "NIP",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        _zajetyGus = true;
+        CommandManager.InvalidateRequerySuggested();
+        try
+        {
+            var dane = await GusService.PobierzAsync(NabywcaNip);
+            if (dane is null)
+            {
+                MessageBox.Show("Nie znaleziono firmy o tym NIP w rejestrze.", "Brak danych",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            NabywcaNip = dane.Nip;
+            NabywcaNazwa = dane.Nazwa;
+            NabywcaAdresL1 = dane.AdresL1;
+            NabywcaAdresL2 = dane.AdresL2;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Pobieranie danych", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _zajetyGus = false;
+            CommandManager.InvalidateRequerySuggested();
+        }
+    }
+
+    /// <summary>Dodaje nabywce do slownika kontrahentow, jesli ma NIP i jeszcze go nie ma.</summary>
+    private static void DopiszKontrahenta(FreeKSeFDbContext db, Strona nabywca)
+    {
+        var nip = Core.Models.Nip.Normalizuj(nabywca.Nip);
+        if (string.IsNullOrEmpty(nip)) return;            // osoba prywatna - pomijamy
+        if (db.Contractors.Any(c => c.Nip == nip)) return; // juz znany
+
+        db.Contractors.Add(new Contractor
+        {
+            Nip = nip,
+            Nazwa = nabywca.Nazwa,
+            AdresL1 = nabywca.Adres.AdresL1,
+            AdresL2 = nabywca.Adres.AdresL2,
+        });
     }
 
     private static string BezpiecznaNazwaPliku(string numer)
