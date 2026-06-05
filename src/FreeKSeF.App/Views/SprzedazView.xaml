@@ -1,0 +1,31 @@
+<UserControl x:Class="FreeKSeF.App.Views.SprzedazView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+             d:DataContext="{d:DesignInstance vm:SprzedazViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
+            <WrapPanel>
+                <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
+                        Background="#1F2937" Foreground="White" Margin="0,0,24,0" />
+                <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
+                <Button Content="Usuń" Command="{Binding UsunCommand}" />
+            </WrapPanel>
+        </Border>
+
+        <DataGrid ItemsSource="{Binding Faktury}" SelectedItem="{Binding Wybrana}" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Numer" Binding="{Binding Numer}" Width="*" />
+                <DataGridTextColumn Header="Data" Binding="{Binding DataWystawienia, StringFormat=d}" Width="100" />
+                <DataGridTextColumn Header="Nabywca" Binding="{Binding KontrahentNazwa}" Width="*" />
+                <DataGridTextColumn Header="Brutto" Binding="{Binding SumaBrutto, StringFormat=N2}" Width="100" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource EnumLabel}}" Width="130" />
+                <DataGridTextColumn Header="Numer KSeF" Binding="{Binding NumerKsef}" Width="180" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

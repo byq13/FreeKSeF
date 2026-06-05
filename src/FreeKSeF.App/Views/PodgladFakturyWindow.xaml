@@ -1,0 +1,18 @@
+<Window x:Class="FreeKSeF.App.Views.PodgladFakturyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Podgląd faktury" Height="800" Width="720"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#F3F4F6" Padding="8">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Zapisz PDF" Click="ZapiszPdf_Click" />
+                <Button Content="Zapisz XML" Click="ZapiszXml_Click" />
+                <Button Content="Drukuj" Click="Drukuj_Click" />
+                <TextBlock x:Name="StatusTekst" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#6B7280" />
+            </StackPanel>
+        </Border>
+        <wv2:WebView2 x:Name="Web" />
+    </DockPanel>
+</Window>

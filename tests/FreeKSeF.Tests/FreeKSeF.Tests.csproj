@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\FreeKSeF.Core\FreeKSeF.Core.csproj" />
     <ProjectReference Include="..\..\src\FreeKSeF.Data\FreeKSeF.Data.csproj" />
     <ProjectReference Include="..\..\src\FreeKSeF.Ksef\FreeKSeF.Ksef.csproj" />
+    <ProjectReference Include="..\..\src\FreeKSeF.Pdf\FreeKSeF.Pdf.csproj" />
   </ItemGroup>
 
 </Project>

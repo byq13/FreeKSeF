@@ -2,9 +2,9 @@ using System.Windows.Controls;
 
 namespace FreeKSeF.App.Views;
 
-public partial class InvoicesView : UserControl
+public partial class SprzedazView : UserControl
 {
-    public InvoicesView()
+    public SprzedazView()
     {
         InitializeComponent();
     }

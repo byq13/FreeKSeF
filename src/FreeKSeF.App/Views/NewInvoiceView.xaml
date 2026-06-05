@@ -126,10 +126,12 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
-                <Button Content="Zapisz" Command="{Binding ZapiszCommand}" />
+                <Button Content="Zapisz do bufora" Command="{Binding ZapiszCommand}" />
+                <Button Content="Zapisz i podgląd" Command="{Binding ZapiszIPodgladCommand}" />
                 <Button Content="Eksportuj XML" Command="{Binding EksportujXmlCommand}" />
-                <Button Content="Wyslij do KSeF" Command="{Binding WyslijCommand}" Background="#1F2937" Foreground="White" />
             </StackPanel>
+            <TextBlock Text="Faktura trafia do bufora (robocza). Wysyłkę do KSeF wykonasz w zakładce „Sprzedaż” po potwierdzeniu."
+                       Foreground="#6B7280" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap" />
 
         </StackPanel>
     </ScrollViewer>

@@ -6,17 +6,19 @@ faktur (Aplikacja Podatnika, drogie chmury programów księgowych) jest płatny 
 okrojony — np. **Aplikacja Podatnika pokazuje historię tylko 30 dni wstecz**, więc
 nie pobierzesz starszej faktury zakupu. A samo **API KSeF jest darmowe**.
 
-## Co potrafi (zakres MVP)
+## Co potrafi
 
-- ✍️ **Wystawianie faktur** sprzedaży i zapis lokalny (SQLite).
+- ✍️ **Wystawianie faktur** sprzedaży do **bufora (robocze)** i zapis lokalny (SQLite).
 - 🧾 **Generowanie XML w formacie FA(3)** (schemat obowiązujący od 1.02.2026),
   walidowanego względem **oficjalnego XSD Ministerstwa Finansów**.
-- 📤 **Wysyłka do KSeF** przez API (sesja interaktywna) + odbiór **UPO**.
-- 💾 **Eksport XML do pliku** — do ręcznego wgrania w Aplikacji Podatnika.
-- 📥 **Import faktur zakupu z KSeF po dowolnym zakresie dat** — bez limitu 30 dni.
-- 🔎 Podgląd faktur wystawionych i zaimportowanych.
+- 📑 **Osobne listy faktur sprzedaży i zakupu** (zakładki).
+- 👁️ **Podgląd faktury jako PDF** w oknie (WebView2) + **zapis/eksport PDF**.
+- 💾 **Eksport XML do pliku** — do ręcznego wgrania w Aplikacji Podatnika (gov.pl).
+- 📤 **Wysyłka do KSeF** — tylko na wyraźne polecenie z **potwierdzeniem** + odbiór **UPO**.
+- 📥 **Import faktur zakupu z KSeF po dowolnym zakresie dat** — bez limitu 30 dni,
+  z **oszczędzaniem limitu** 64 zapytań/h (pomija faktury już pobrane).
 
-Planowane dalej: magazyn, pobieranie danych po NIP (GUS), generowanie PDF, korekty,
+Planowane dalej: magazyn, pobieranie danych po NIP (GUS), korekty,
 logowanie podpisem kwalifikowanym (XAdES).
 
 ## Architektura
@@ -26,8 +28,9 @@ logowanie podpisem kwalifikowanym (XAdES).
 | `FreeKSeF.Core` | `net10.0` | Model domenowy, **generacja i walidacja FA(3)** (klasy z XSD, mapper, serializer, walidator). |
 | `FreeKSeF.Data` | `net10.0` | EF Core + **SQLite**, encje, migracje, mapowanie encja↔model. |
 | `FreeKSeF.Ksef` | `net10.0` | Integracja z KSeF (`IKsefGateway`) — oparta o oficjalny **KSeF.Client** (MF). |
-| `FreeKSeF.App`  | `net10.0-windows` | Interfejs **WPF** (MVVM). |
-| `FreeKSeF.Tests`| `net10.0` | Testy: walidacja FA(3) z XSD, warstwa danych. |
+| `FreeKSeF.Pdf`  | `net10.0` | Generowanie PDF faktury (**PDFsharp/MigraDoc**, MIT) z osadzonym fontem DejaVu. |
+| `FreeKSeF.App`  | `net10.0-windows` | Interfejs **WPF** (MVVM), podgląd PDF przez **WebView2**. |
+| `FreeKSeF.Tests`| `net10.0` | Testy: walidacja FA(3) z XSD, warstwa danych, generowanie PDF. |
 
 Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 `FreeKSeF.Core/Schemas`, dzięki czemu walidacja działa offline.
@@ -35,14 +38,15 @@ Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 ## Status
 
 ✅ Generacja i walidacja FA(3) (XML przechodzi oficjalny XSD)
-✅ Warstwa danych SQLite + migracje + import zakupu z XML
-✅ Kontrakt integracji KSeF (`IKsefGateway`)
-⏳ Realna implementacja KSeF na `KSeF.Client` (wymaga tokenu PAT — patrz niżej)
-⏳ Interfejs WPF
+✅ Warstwa danych SQLite + migracje + import zakupu (z oszczędzaniem limitu KSeF)
+✅ Realna integracja KSeF na oficjalnym `KSeF.Client` 2.6.0
+✅ Interfejs WPF: listy sprzedaży/zakupu, podgląd/eksport PDF, eksport XML, bufor + wysyłka z potwierdzeniem
 
 ## Wymagania
 
-- .NET SDK 10 (desktop) — do budowy WPF na Windows.
+- .NET SDK 10 (desktop) — do budowy WPF na Windows (lub gotowy `FreeKSeF.exe` z CI).
+- **WebView2 Runtime** — do podglądu PDF; jest **wbudowany w Windows 11** (na starszych
+  systemach instaluje się z Edge / Evergreen Runtime).
 - Konto i token **KSeF** (na start środowisko testowe).
 
 ## Budowanie

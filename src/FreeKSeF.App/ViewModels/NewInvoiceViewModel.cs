@@ -5,6 +5,7 @@ using System.IO;
 using System.Windows;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
+using FreeKSeF.App.Views;
 using FreeKSeF.Core.Fa3;
 using FreeKSeF.Core.Models;
 using FreeKSeF.Data;
@@ -33,9 +34,9 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         Pozycje.CollectionChanged += OnPozycjeChanged;
         DodajPozycjeCommand = new RelayCommand(DodajPozycje);
         UsunPozycjeCommand = new RelayCommand(UsunPozycje, () => WybranaPozycja is not null);
-        ZapiszCommand = new RelayCommand(() => ZapiszDoBazy(StatusFaktury.Robocza, "Zapisano fakture (robocza)."));
+        ZapiszCommand = new RelayCommand(Zapisz);
+        ZapiszIPodgladCommand = new RelayCommand(ZapiszIPodglad);
         EksportujXmlCommand = new RelayCommand(EksportujXml);
-        WyslijCommand = new RelayCommand(Wyslij);
         Odswiez();
     }
 
@@ -78,8 +79,8 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public RelayCommand DodajPozycjeCommand { get; }
     public RelayCommand UsunPozycjeCommand { get; }
     public RelayCommand ZapiszCommand { get; }
+    public RelayCommand ZapiszIPodgladCommand { get; }
     public RelayCommand EksportujXmlCommand { get; }
-    public RelayCommand WyslijCommand { get; }
 
     /// <summary>Przeladowuje dane pomocnicze (kontrahenci, nr konta, propozycja numeru).</summary>
     public void Odswiez()
@@ -232,40 +233,39 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             "Eksport zakonczony", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private async void Wyslij()
+    // Faktura trafia do bufora (robocza). Wysylka do KSeF odbywa sie osobno,
+    // z zakladki Sprzedaz, po wyraznym potwierdzeniu uzytkownika.
+    private void Zapisz()
     {
-        var inv = ZapiszDoBazy(StatusFaktury.Robocza, string.Empty);
+        if (ZapiszDoBazy(StatusFaktury.Robocza, "Zapisano fakture do bufora (robocza).") is not null)
+            ResetujFormularz();
+    }
+
+    private void ZapiszIPodglad()
+    {
+        var inv = ZapiszDoBazy(StatusFaktury.Robocza, komunikat: string.Empty);
         if (inv is null) return;
 
-        try
-        {
-            await AppServices.ZalogujZUstawienAsync();
-            var wynik = await AppServices.Ksef.WyslijFakture(System.Text.Encoding.UTF8.GetBytes(inv.Xml));
-            using var db = AppServices.Db();
-            var e = db.Invoices.Find(inv.Id)!;
-            if (wynik.Sukces)
-            {
-                e.Status = StatusFaktury.Przyjeta;
-                e.NumerKsef = wynik.NumerKsef;
-                e.NumerReferencyjny = wynik.NumerReferencyjny;
-                e.UpoXml = wynik.UpoXml;
-                e.WyslanoUtc = DateTime.UtcNow;
-                db.SaveChanges();
-                MessageBox.Show($"Faktura przyjeta przez KSeF.\nNumer KSeF: {wynik.NumerKsef}", "Wyslano",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            else
-            {
-                e.Status = StatusFaktury.Blad;
-                db.SaveChanges();
-                MessageBox.Show("KSeF odrzucil fakture: " + wynik.Blad, "Blad wysylki",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-        catch (Ksef.KsefException ex)
-        {
-            MessageBox.Show(ex.Message, "KSeF niedostepny", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
+        var okno = new PodgladFakturyWindow(inv) { Owner = Application.Current.MainWindow };
+        okno.ShowDialog();
+        ResetujFormularz();
+    }
+
+    /// <summary>Czysci formularz po zapisaniu, aby od razu wystawic kolejna fakture.</summary>
+    private void ResetujFormularz()
+    {
+        Numer = string.Empty;
+        DataWystawienia = DateTime.Today;
+        DataSprzedazy = DateTime.Today;
+        WybranyKontrahent = null;
+        NabywcaNip = NabywcaNazwa = NabywcaAdresL1 = NabywcaAdresL2 = string.Empty;
+        TerminPlatnosci = DateTime.Today.AddDays(14);
+
+        foreach (var p in Pozycje.ToList())
+            p.PropertyChanged -= OnPozycjaPropertyChanged;
+        Pozycje.Clear();
+
+        Odswiez(); // proponuje nowy numer i odswieza slownik kontrahentow
     }
 
     private static string BezpiecznaNazwaPliku(string numer)

@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
   </ItemGroup>
 
@@ -22,6 +23,7 @@
     <ProjectReference Include="..\FreeKSeF.Core\FreeKSeF.Core.csproj" />
     <ProjectReference Include="..\FreeKSeF.Data\FreeKSeF.Data.csproj" />
     <ProjectReference Include="..\FreeKSeF.Ksef\FreeKSeF.Ksef.csproj" />
+    <ProjectReference Include="..\FreeKSeF.Pdf\FreeKSeF.Pdf.csproj" />
   </ItemGroup>
 
 </Project>

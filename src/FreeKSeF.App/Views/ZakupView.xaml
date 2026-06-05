@@ -1,0 +1,37 @@
+<UserControl x:Class="FreeKSeF.App.Views.ZakupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+             d:DataContext="{d:DesignInstance vm:ZakupViewModel}"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="Import z KSeF — od:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
+                    <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
+                    <Button Content="Pobierz zakupy" Command="{Binding PobierzZakupyCommand}" Margin="0,0,24,0" />
+
+                    <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
+                </WrapPanel>
+                <TextBlock Text="{Binding ImportStatus}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0" />
+            </StackPanel>
+        </Border>
+
+        <DataGrid ItemsSource="{Binding Faktury}" SelectedItem="{Binding Wybrana}" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Numer" Binding="{Binding Numer}" Width="*" />
+                <DataGridTextColumn Header="Data" Binding="{Binding DataWystawienia, StringFormat=d}" Width="100" />
+                <DataGridTextColumn Header="Sprzedawca" Binding="{Binding KontrahentNazwa}" Width="*" />
+                <DataGridTextColumn Header="Brutto" Binding="{Binding SumaBrutto, StringFormat=N2}" Width="100" />
+                <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource EnumLabel}}" Width="130" />
+                <DataGridTextColumn Header="Numer KSeF" Binding="{Binding NumerKsef}" Width="180" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

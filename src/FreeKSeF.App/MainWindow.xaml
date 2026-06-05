@@ -17,9 +17,12 @@
             </StackPanel>
         </Border>
 
-        <TabControl Margin="8">
-            <TabItem Header="Faktury">
-                <views:InvoicesView DataContext="{Binding Faktury}" />
+        <TabControl Margin="8" SelectionChanged="Zakladki_SelectionChanged">
+            <TabItem Header="Sprzedaż">
+                <views:SprzedazView DataContext="{Binding Sprzedaz}" />
+            </TabItem>
+            <TabItem Header="Zakup">
+                <views:ZakupView DataContext="{Binding Zakup}" />
             </TabItem>
             <TabItem Header="Nowa faktura">
                 <views:NewInvoiceView DataContext="{Binding NowaFaktura}" />
