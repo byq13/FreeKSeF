@@ -23,11 +23,11 @@ logowanie podpisem kwalifikowanym (XAdES).
 
 | Projekt | Framework | Rola |
 |---|---|---|
-| `FreeKSeF.Core` | `net8.0` | Model domenowy, **generacja i walidacja FA(3)** (klasy z XSD, mapper, serializer, walidator). |
-| `FreeKSeF.Data` | `net8.0` | EF Core + **SQLite**, encje, migracje, mapowanie encja↔model. |
-| `FreeKSeF.Ksef` | `net8.0` | Integracja z KSeF (`IKsefGateway`) — oparta o oficjalny **KSeF.Client** (MF). |
-| `FreeKSeF.App`  | `net8.0-windows` | Interfejs **WPF** (MVVM). |
-| `FreeKSeF.Tests`| `net8.0` | Testy: walidacja FA(3) z XSD, warstwa danych. |
+| `FreeKSeF.Core` | `net10.0` | Model domenowy, **generacja i walidacja FA(3)** (klasy z XSD, mapper, serializer, walidator). |
+| `FreeKSeF.Data` | `net10.0` | EF Core + **SQLite**, encje, migracje, mapowanie encja↔model. |
+| `FreeKSeF.Ksef` | `net10.0` | Integracja z KSeF (`IKsefGateway`) — oparta o oficjalny **KSeF.Client** (MF). |
+| `FreeKSeF.App`  | `net10.0-windows` | Interfejs **WPF** (MVVM). |
+| `FreeKSeF.Tests`| `net10.0` | Testy: walidacja FA(3) z XSD, warstwa danych. |
 
 Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 `FreeKSeF.Core/Schemas`, dzięki czemu walidacja działa offline.
@@ -42,7 +42,7 @@ Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 
 ## Wymagania
 
-- .NET SDK 8 (desktop) — do budowy WPF na Windows.
+- .NET SDK 10 (desktop) — do budowy WPF na Windows.
 - Konto i token **KSeF** (na start środowisko testowe).
 
 ## Budowanie
