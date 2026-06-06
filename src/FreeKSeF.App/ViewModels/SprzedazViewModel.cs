@@ -17,8 +17,6 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
     private const int LimitPobranNaImport = 50;
 
     private bool _zajety;
-    private DateTime _importOd = DateTime.Today.AddMonths(-3);
-    private DateTime _importDo = DateTime.Today;
     private string _importStatus = string.Empty;
 
     public SprzedazViewModel() : base(KierunekFaktury.Sprzedaz)
@@ -28,8 +26,6 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
         Odswiez();
     }
 
-    public DateTime ImportOd { get => _importOd; set => SetField(ref _importOd, value); }
-    public DateTime ImportDo { get => _importDo; set => SetField(ref _importDo, value); }
     public string ImportStatus { get => _importStatus; set => SetField(ref _importStatus, value); }
 
     public RelayCommand WyslijCommand { get; }
@@ -93,7 +89,8 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
                 posiadane = db.Invoices.Where(i => i.NumerKsef != null).Select(i => i.NumerKsef!).ToHashSet();
 
             ImportStatus = "Sprawdzanie listy faktur w KSeF...";
-            var wynik = await AppServices.Ksef.PobierzFakturyAsync(Ksef.StronaRola.Sprzedawca, ImportOd, ImportDo, posiadane, LimitPobranNaImport, f =>
+            var (od, doDaty) = ZakresImportu();
+            var wynik = await AppServices.Ksef.PobierzFakturyAsync(Ksef.StronaRola.Sprzedawca, od, doDaty, posiadane, LimitPobranNaImport, f =>
             {
                 if (ZapiszPobranaSprzedaz(f)) dodane++;
                 ImportStatus = $"Pobieranie faktur sprzedazy: {dodane}...";

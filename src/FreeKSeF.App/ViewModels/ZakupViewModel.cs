@@ -13,8 +13,6 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
     // KSeF limituje do ~64 zapytan/godzine - ograniczamy liczbe pelnych faktur na jeden import.
     private const int LimitPobranNaImport = 50;
 
-    private DateTime _importOd = DateTime.Today.AddMonths(-3);
-    private DateTime _importDo = DateTime.Today;
     private string _importStatus = string.Empty;
     private bool _zajety;
 
@@ -24,8 +22,6 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
         Odswiez();
     }
 
-    public DateTime ImportOd { get => _importOd; set => SetField(ref _importOd, value); }
-    public DateTime ImportDo { get => _importDo; set => SetField(ref _importDo, value); }
     public string ImportStatus { get => _importStatus; set => SetField(ref _importStatus, value); }
 
     public RelayCommand PobierzZakupyCommand { get; }
@@ -47,7 +43,8 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
                 posiadane = db.Invoices.Where(i => i.NumerKsef != null).Select(i => i.NumerKsef!).ToHashSet();
 
             ImportStatus = "Sprawdzanie listy faktur w KSeF...";
-            var wynik = await AppServices.Ksef.PobierzFakturyAsync(Ksef.StronaRola.Nabywca, ImportOd, ImportDo, posiadane, LimitPobranNaImport, f =>
+            var (od, doDaty) = ZakresImportu();
+            var wynik = await AppServices.Ksef.PobierzFakturyAsync(Ksef.StronaRola.Nabywca, od, doDaty, posiadane, LimitPobranNaImport, f =>
             {
                 if (ZapiszPobranaFakture(f)) dodane++;
                 ImportStatus = $"Pobieranie nowych faktur: {dodane}...";

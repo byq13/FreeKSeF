@@ -22,10 +22,10 @@
                     <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
                 </WrapPanel>
                 <WrapPanel Margin="0,8,0,0">
-                    <TextBlock Text="Pobierz sprzedaż z KSeF — od:" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <DatePicker SelectedDate="{Binding ImportOd}" Margin="0,0,6,0" />
-                    <TextBlock Text="do:" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <DatePicker SelectedDate="{Binding ImportDo}" Margin="0,0,6,0" />
+                    <TextBlock Text="Pobierz sprzedaż z KSeF — miesiąc:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="120" ItemsSource="{Binding Miesiace}" SelectedValue="{Binding ImportMiesiac}"
+                              SelectedValuePath="Numer" DisplayMemberPath="Nazwa" Margin="0,0,6,0" />
+                    <ComboBox Width="80" ItemsSource="{Binding Lata}" SelectedItem="{Binding ImportRok}" Margin="0,0,12,0" />
                     <Button Content="Pobierz sprzedaż" Command="{Binding PobierzSprzedazCommand}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding ImportStatus}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0" />

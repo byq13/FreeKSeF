@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
@@ -18,15 +19,22 @@ public enum OkresFiltru
     Wszystko,
 }
 
+/// <summary>Pozycja listy miesiecy do wyboru (numer + polska nazwa).</summary>
+public sealed record MiesiacOpcja(int Numer, string Nazwa);
+
 /// <summary>
 /// Wspolna baza list faktur (sprzedaz/zakup): wczytywanie wg kierunku z filtrem okresu
 /// (zapamietywanym w bazie), zaznaczanie wiersza, podglad PDF, zapis XML i usuwanie.
 /// </summary>
 public abstract class FakturaListaViewModelBase : ViewModelBase
 {
+    private static readonly CultureInfo Pl = CultureInfo.GetCultureInfo("pl-PL");
+
     private readonly KierunekFaktury _kierunek;
     private FakturaRow? _wybrany;
     private OkresFiltru _okres;
+    private int _importMiesiac = DateTime.Today.Month;
+    private int _importRok = DateTime.Today.Year;
 
     protected FakturaListaViewModelBase(KierunekFaktury kierunek)
     {
@@ -65,6 +73,26 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
     public RelayCommand ZapiszXmlCommand { get; }
     public RelayCommand ZaznaczCommand { get; }
     public RelayCommand UsunCommand { get; }
+
+    // --- Wybor miesiaca do importu z KSeF (pobiera caly wybrany miesiac) ---
+
+    public IReadOnlyList<MiesiacOpcja> Miesiace { get; } =
+        Enumerable.Range(1, 12).Select(m => new MiesiacOpcja(m, Wielka(Pl.DateTimeFormat.GetMonthName(m)))).ToList();
+
+    public IReadOnlyList<int> Lata { get; } =
+        Enumerable.Range(0, 6).Select(i => DateTime.Today.Year - i).ToList();
+
+    public int ImportMiesiac { get => _importMiesiac; set => SetField(ref _importMiesiac, value); }
+    public int ImportRok { get => _importRok; set => SetField(ref _importRok, value); }
+
+    /// <summary>Zakres dat = caly wybrany miesiac (pierwszy..ostatni dzien).</summary>
+    protected (DateTime Od, DateTime Do) ZakresImportu()
+    {
+        var od = new DateTime(ImportRok, ImportMiesiac, 1);
+        return (od, od.AddMonths(1).AddDays(-1));
+    }
+
+    private static string Wielka(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0], Pl) + s[1..];
 
     public void Odswiez()
     {
