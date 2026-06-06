@@ -5,6 +5,7 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <conv:EnumLabelConverter x:Key="EnumLabel" />
+        <conv:StatusSkrotConverter x:Key="StatusSkrot" />
 
         <!-- Proste, czytelne style dla calej aplikacji -->
         <Style TargetType="{x:Type Label}">

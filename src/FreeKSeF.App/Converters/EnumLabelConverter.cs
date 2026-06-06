@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Windows.Data;
+using FreeKSeF.App.ViewModels;
 using FreeKSeF.Core.Models;
 using FreeKSeF.Data.Entities;
 
@@ -12,6 +13,7 @@ public sealed class EnumLabelConverter : IValueConverter
     {
         StawkaVat s => s.Etykieta(),
         FormaPlatnosci f => Forma(f),
+        OkresFiltru o => Okres(o),
         Srodowisko e => e switch { Srodowisko.Test => "Testowe", Srodowisko.Demo => "Demo", Srodowisko.Produkcja => "Produkcyjne", _ => e.ToString() },
         KierunekFaktury k => k == KierunekFaktury.Sprzedaz ? "Sprzedaz" : "Zakup",
         StatusFaktury st => Status(st),
@@ -20,6 +22,15 @@ public sealed class EnumLabelConverter : IValueConverter
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => Binding.DoNothing;
+
+    private static string Okres(OkresFiltru o) => o switch
+    {
+        OkresFiltru.BiezacyMiesiac => "Bieżący miesiąc",
+        OkresFiltru.BiezacyKwartal => "Bieżący kwartał",
+        OkresFiltru.BiezacyRok => "Bieżący rok",
+        OkresFiltru.Wszystko => "Wszystko",
+        _ => o.ToString(),
+    };
 
     private static string Forma(FormaPlatnosci f) => f switch
     {

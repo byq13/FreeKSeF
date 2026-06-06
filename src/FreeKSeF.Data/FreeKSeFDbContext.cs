@@ -16,6 +16,7 @@ public class FreeKSeFDbContext : DbContext
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
     public DbSet<KsefLog> KsefLogs => Set<KsefLog>();
+    public DbSet<Ustawienie> Ustawienia => Set<Ustawienie>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,5 +42,7 @@ public class FreeKSeFDbContext : DbContext
         });
 
         modelBuilder.Entity<Contractor>().HasIndex(c => c.Nip);
+
+        modelBuilder.Entity<Ustawienie>().HasKey(u => u.Klucz);
     }
 }

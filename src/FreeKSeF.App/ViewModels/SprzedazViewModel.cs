@@ -23,8 +23,7 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
 
     public SprzedazViewModel() : base(KierunekFaktury.Sprzedaz)
     {
-        WyslijCommand = new RelayCommand(Wyslij, () => !_zajety && Wybrana is not null);
-        UsunCommand = new RelayCommand(Usun, () => Wybrana is not null);
+        WyslijCommand = new RelayCommand(Wyslij, () => !_zajety && Wybrany is not null);
         PobierzSprzedazCommand = new RelayCommand(PobierzSprzedaz, () => !_zajety);
         Odswiez();
     }
@@ -34,28 +33,27 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
     public string ImportStatus { get => _importStatus; set => SetField(ref _importStatus, value); }
 
     public RelayCommand WyslijCommand { get; }
-    public RelayCommand UsunCommand { get; }
     public RelayCommand PobierzSprzedazCommand { get; }
 
     private async void Wyslij()
     {
-        if (Wybrana is null) return;
+        if (Wybrany?.Faktura is not { } faktura) return;
 
-        if (Wybrana.Status == StatusFaktury.Przyjeta)
+        if (faktura.Status == StatusFaktury.Przyjeta)
         {
-            MessageBox.Show($"Faktura {Wybrana.Numer} zostala juz przyjeta przez KSeF (numer {Wybrana.NumerKsef}).",
+            MessageBox.Show($"Faktura {faktura.Numer} zostala juz przyjeta przez KSeF (numer {faktura.NumerKsef}).",
                 "Juz wyslana", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
         var potwierdzenie = MessageBox.Show(
-            $"Czy na pewno wyslac fakture {Wybrana.Numer} do KSeF?\n\n" +
+            $"Czy na pewno wyslac fakture {faktura.Numer} do KSeF?\n\n" +
             "Operacja jest nieodwracalna - faktura zostanie trwale zarejestrowana w KSeF.",
             "Potwierdzenie wysylki",
             MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
         if (potwierdzenie != MessageBoxResult.Yes) return;
 
-        var id = Wybrana.Id;
+        var id = faktura.Id;
         _zajety = true;
         CommandManager.InvalidateRequerySuggested();
         try
@@ -131,25 +129,6 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
 
         Application.Current.Dispatcher.Invoke(() => DodajNaGore(inv));
         return true;
-    }
-
-    private void Usun()
-    {
-        if (Wybrana is null) return;
-
-        var tekst = Wybrana.Status == StatusFaktury.Przyjeta || Wybrana.Status == StatusFaktury.Zaimportowana
-            ? $"Faktura {Wybrana.Numer} jest zarejestrowana w KSeF. Usuniecie z lokalnej bazy NIE anuluje jej w KSeF.\n\nUsunac wpis lokalny?"
-            : $"Usunac robocza fakture {Wybrana.Numer} z lokalnej bazy?";
-
-        if (MessageBox.Show(tekst, "Usuwanie faktury", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No)
-            != MessageBoxResult.Yes) return;
-
-        using (var db = AppServices.Db())
-        {
-            var e = db.Invoices.Find(Wybrana.Id);
-            if (e is not null) { db.Invoices.Remove(e); db.SaveChanges(); }
-        }
-        Odswiez();
     }
 
     private static string Podsumowanie(Ksef.WynikImportu w)

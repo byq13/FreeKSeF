@@ -27,7 +27,10 @@ public partial class PodgladFakturyWindow : Window
         try
         {
             _pdfTemp = FakturaService.ZapiszPdfDoTemp(_faktura);
-            await Web.EnsureCoreWebView2Async();
+            // Folder danych WebView2 trzymamy w %TEMP%, by NIE smiecic katalogu obok exe.
+            var folderTemp = Path.Combine(Path.GetTempPath(), "FreeKSeF", "WebView2");
+            var env = await CoreWebView2Environment.CreateAsync(userDataFolder: folderTemp);
+            await Web.EnsureCoreWebView2Async(env);
             // Ukryj pasek narzedzi przegladarki, zostaw sam podglad PDF.
             Web.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
             Web.CoreWebView2.Navigate(new Uri(_pdfTemp).AbsoluteUri);

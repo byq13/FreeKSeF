@@ -10,11 +10,16 @@
         <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
             <StackPanel>
                 <WrapPanel>
+                    <TextBlock Text="Okres:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="150" SelectedItem="{Binding Okres}" ItemsSource="{Binding Okresy}" Margin="0,0,24,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" /></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
-                            Background="#1F2937" Foreground="White" Margin="0,0,24,0" />
+                            Background="#1F2937" Foreground="White" />
                     <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
                     <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
-                    <Button Content="Usuń" Command="{Binding UsunCommand}" />
                 </WrapPanel>
                 <WrapPanel Margin="0,8,0,0">
                     <TextBlock Text="Pobierz sprzedaż z KSeF — od:" VerticalAlignment="Center" Margin="0,0,6,0" />
@@ -27,14 +32,45 @@
             </StackPanel>
         </Border>
 
-        <DataGrid ItemsSource="{Binding Faktury}" SelectedItem="{Binding Wybrana}" IsReadOnly="True">
+        <DataGrid x:Name="Grid" Tag="grid.kolumny.sprzedaz"
+                  ItemsSource="{Binding Wiersze}" SelectedItem="{Binding Wybrany}" IsReadOnly="True"
+                  PreviewMouseRightButtonDown="Grid_RightClick"
+                  Loaded="Grid_Loaded" Unloaded="Grid_Unloaded" ColumnReordered="Grid_ColumnReordered">
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Zaznaczona}" Value="True">
+                            <Setter Property="Background" Value="#FFF3CD" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.ContextMenu>
+                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="Wyślij do KSeF" Command="{Binding WyslijCommand}" />
+                    <MenuItem Header="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <MenuItem Header="Zaznacz / odznacz" Command="{Binding ZaznaczCommand}" />
+                    <Separator />
+                    <MenuItem Header="Usuń" Command="{Binding UsunCommand}" />
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Numer" Binding="{Binding Numer}" Width="*" />
-                <DataGridTextColumn Header="Data" Binding="{Binding DataWystawienia, StringFormat=d}" Width="100" />
-                <DataGridTextColumn Header="Nabywca" Binding="{Binding KontrahentNazwa}" Width="*" />
-                <DataGridTextColumn Header="Brutto" Binding="{Binding SumaBrutto, StringFormat=N2}" Width="100" />
-                <DataGridTextColumn Header="Status" Binding="{Binding Status, Converter={StaticResource EnumLabel}}" Width="130" />
-                <DataGridTextColumn Header="Numer KSeF" Binding="{Binding NumerKsef}" Width="180" />
+                <DataGridTextColumn Header="St." Binding="{Binding Faktura.Status, Converter={StaticResource StatusSkrot}}" Width="36">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="HorizontalAlignment" Value="Center" />
+                            <Setter Property="ToolTip" Value="{Binding Faktura.Status, Converter={StaticResource EnumLabel}}" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Numer" Binding="{Binding Faktura.Numer}" Width="*" />
+                <DataGridTextColumn Header="Data" Binding="{Binding Faktura.DataWystawienia, StringFormat=d}" Width="95" />
+                <DataGridTextColumn Header="Nabywca" Binding="{Binding Faktura.KontrahentNazwa}" Width="*" />
+                <DataGridTextColumn Header="NIP" Binding="{Binding Faktura.KontrahentNip}" Width="110" />
+                <DataGridTextColumn Header="Netto" Binding="{Binding Faktura.SumaNetto, StringFormat=N2}" Width="90" />
+                <DataGridTextColumn Header="VAT" Binding="{Binding Faktura.SumaVat, StringFormat=N2}" Width="80" />
+                <DataGridTextColumn Header="Brutto" Binding="{Binding Faktura.SumaBrutto, StringFormat=N2}" Width="95" />
+                <DataGridTextColumn Header="Numer KSeF" Binding="{Binding Faktura.NumerKsef}" Width="170" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>
