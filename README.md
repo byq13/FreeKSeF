@@ -21,6 +21,11 @@ nie pobierzesz starszej faktury zakupu. A samo **API KSeF jest darmowe**.
   przełącznik aktywnej firmy u góry okna.
 - 🧳 **Przenośność** — baza `freeksef.db` leży **obok pliku exe** (pendrive), bez plików
   konfiguracyjnych; wszystkie ustawienia trzymane w bazie.
+- 💱 **Faktury w walucie obcej** (EUR, USD…) z kursem **NBP** (własna tabela kursów, kurs z dnia
+  poprzedniego, edytowalny); VAT przeliczany na PLN zgodnie z FA(3).
+- 🌍 **Kontrahenci z UE i spoza UE** (kod kraju + NrVatUE/NrID), adres zagraniczny.
+- 📦 **Baza produktów/usług** — szybkie wstawianie powtarzalnych pozycji.
+- 🔢 **Konfigurowalna numeracja** — własny szablon numeru ({NR}/{MM}/{RRRR}) + reset miesięczny/roczny.
 
 Planowane dalej: magazyn, pobieranie danych po NIP (GUS), korekty,
 logowanie podpisem kwalifikowanym (XAdES).

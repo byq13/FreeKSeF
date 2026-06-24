@@ -22,6 +22,8 @@ public sealed class SettingsViewModel : ViewModelBase
     private string _adresL2 = string.Empty;
     private string _nrRachunku = string.Empty;
     private Srodowisko _srodowisko = Srodowisko.Test;
+    private string _numerSzablon = "FV {NR}/{MM}/{RRRR}";
+    private bool _numerResetRoczny;
     private bool _tokenUstawiony;
     private bool _zajety;
 
@@ -53,6 +55,8 @@ public sealed class SettingsViewModel : ViewModelBase
             AdresL2 = value.AdresL2 ?? string.Empty;
             NrRachunku = value.NrRachunku ?? string.Empty;
             Srodowisko = value.Srodowisko;
+            NumerSzablon = string.IsNullOrWhiteSpace(value.NumerSzablon) ? "FV {NR}/{MM}/{RRRR}" : value.NumerSzablon;
+            NumerResetRoczny = value.NumerResetRoczny;
             TokenUstawiony = !string.IsNullOrEmpty(value.KsefTokenProtected);
             NowyToken = string.Empty;
         }
@@ -64,6 +68,8 @@ public sealed class SettingsViewModel : ViewModelBase
     public string AdresL2 { get => _adresL2; set => SetField(ref _adresL2, value); }
     public string NrRachunku { get => _nrRachunku; set => SetField(ref _nrRachunku, value); }
     public Srodowisko Srodowisko { get => _srodowisko; set => SetField(ref _srodowisko, value); }
+    public string NumerSzablon { get => _numerSzablon; set => SetField(ref _numerSzablon, value); }
+    public bool NumerResetRoczny { get => _numerResetRoczny; set => SetField(ref _numerResetRoczny, value); }
 
     public bool TokenUstawiony { get => _tokenUstawiony; set { if (SetField(ref _tokenUstawiony, value)) OnPropertyChanged(nameof(StatusTokenu)); } }
     public string StatusTokenu => TokenUstawiony ? "Token zapisany." : "Brak tokenu.";
@@ -104,6 +110,8 @@ public sealed class SettingsViewModel : ViewModelBase
         _id = 0;
         Nazwa = Nip = AdresL1 = AdresL2 = NrRachunku = string.Empty;
         Srodowisko = Srodowisko.Test;
+        NumerSzablon = "FV {NR}/{MM}/{RRRR}";
+        NumerResetRoczny = false;
         TokenUstawiony = false;
         NowyToken = string.Empty;
     }
@@ -127,6 +135,8 @@ public sealed class SettingsViewModel : ViewModelBase
             c.AdresL2 = string.IsNullOrWhiteSpace(AdresL2) ? null : AdresL2.Trim();
             c.NrRachunku = string.IsNullOrWhiteSpace(NrRachunku) ? null : NrRachunku.Trim();
             c.Srodowisko = Srodowisko;
+            c.NumerSzablon = string.IsNullOrWhiteSpace(NumerSzablon) ? "FV {NR}/{MM}/{RRRR}" : NumerSzablon.Trim();
+            c.NumerResetRoczny = NumerResetRoczny;
             if (!string.IsNullOrWhiteSpace(NowyToken))
             {
                 c.KsefTokenProtected = SecretProtector.Protect(NowyToken.Trim());

@@ -132,22 +132,30 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         if (firma is not null && string.IsNullOrWhiteSpace(NrRachunku))
             NrRachunku = firma.NrRachunku ?? string.Empty;
 
-        if (string.IsNullOrWhiteSpace(Numer))
-            Numer = ProponowanyNumer(db, firmaId);
+        if (string.IsNullOrWhiteSpace(Numer) && firma is not null)
+            Numer = ProponowanyNumer(db, firma);
 
         if (Pozycje.Count == 0)
             DodajPozycje();
     }
 
-    private static string ProponowanyNumer(FreeKSeFDbContext db, int firmaId)
+    /// <summary>Buduje proponowany numer wg szablonu firmy ({NR}/{MM}/{RRRR}/{RR}) i resetu (miesiac/rok).</summary>
+    private static string ProponowanyNumer(FreeKSeFDbContext db, Company firma)
     {
         var teraz = DateTime.Today;
-        var wTymMiesiacu = db.Invoices.Count(i =>
-            i.CompanyId == firmaId &&
+        var roczny = firma.NumerResetRoczny;
+        var licznik = db.Invoices.Count(i =>
+            i.CompanyId == firma.Id &&
             i.Kierunek == KierunekFaktury.Sprzedaz &&
             i.DataWystawienia.Year == teraz.Year &&
-            i.DataWystawienia.Month == teraz.Month);
-        return $"FV {wTymMiesiacu + 1}/{teraz:MM}/{teraz:yyyy}";
+            (roczny || i.DataWystawienia.Month == teraz.Month)) + 1;
+
+        var szablon = string.IsNullOrWhiteSpace(firma.NumerSzablon) ? "FV {NR}/{MM}/{RRRR}" : firma.NumerSzablon;
+        return szablon
+            .Replace("{NR}", licznik.ToString())
+            .Replace("{MM}", teraz.ToString("MM"))
+            .Replace("{RRRR}", teraz.ToString("yyyy"))
+            .Replace("{RR}", teraz.ToString("yy"));
     }
 
     private void DodajPozycje()

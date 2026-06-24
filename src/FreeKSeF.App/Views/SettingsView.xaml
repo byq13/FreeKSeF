@@ -66,7 +66,13 @@
                 <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
                 <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
 
-                <WrapPanel Margin="0,8,0,0">
+                <TextBlock Text="Numeracja faktur" FontSize="16" FontWeight="Bold" Margin="0,16,0,8" />
+                <Label Content="Szablon numeru (tokeny: {NR} {MM} {RRRR} {RR})" />
+                <TextBox Text="{Binding NumerSzablon, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox Content="Reset licznika co rok (domyślnie co miesiąc)"
+                          IsChecked="{Binding NumerResetRoczny}" Margin="0,6,0,0" />
+
+                <WrapPanel Margin="0,12,0,0">
                     <Button Content="Nowa" Command="{Binding NowyCommand}" />
                     <Button Content="Zapisz" Command="{Binding ZapiszCommand}" />
                     <Button Content="Usuń" Command="{Binding UsunCommand}" />

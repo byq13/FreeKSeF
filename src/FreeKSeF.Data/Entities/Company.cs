@@ -20,6 +20,14 @@ public class Company
     public Srodowisko Srodowisko { get; set; } = Srodowisko.Test;
 
     /// <summary>
+    /// Szablon numeru faktury z tokenami {NR} {MM} {RRRR} {RR}, np. "FV {NR}/{MM}/{RRRR}".
+    /// </summary>
+    public string NumerSzablon { get; set; } = "FV {NR}/{MM}/{RRRR}";
+
+    /// <summary>Czy licznik numeru zeruje sie co rok (true) czy co miesiac (false).</summary>
+    public bool NumerResetRoczny { get; set; }
+
+    /// <summary>
     /// Token KSeF w postaci zaszyfrowanej (np. DPAPI na Windows).
     /// Nigdy nie przechowujemy tokenu w czystym tekscie.
     /// </summary>
