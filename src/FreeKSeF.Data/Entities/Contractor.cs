@@ -5,6 +5,9 @@ public class Contractor
 {
     public int Id { get; set; }
 
+    /// <summary>Firma (wlasciciel) - kontrahenci sa izolowani per firma.</summary>
+    public int CompanyId { get; set; }
+
     public string? Nip { get; set; }
     public string Nazwa { get; set; } = string.Empty;
 

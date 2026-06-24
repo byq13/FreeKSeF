@@ -11,7 +11,7 @@ namespace FreeKSeF.Data;
 public static class FakturaMapping
 {
     /// <summary>Buduje encje faktury sprzedazy z modelu domenowego (z wygenerowanym XML FA(3)).</summary>
-    public static Invoice ToEntity(FakturaModel m, KierunekFaktury kierunek = KierunekFaktury.Sprzedaz)
+    public static Invoice ToEntity(FakturaModel m, int companyId, KierunekFaktury kierunek = KierunekFaktury.Sprzedaz)
     {
         ArgumentNullException.ThrowIfNull(m);
 
@@ -19,6 +19,7 @@ public static class FakturaMapping
 
         var inv = new Invoice
         {
+            CompanyId = companyId,
             Kierunek = kierunek,
             Status = StatusFaktury.Robocza,
             Numer = m.Numer,
@@ -53,15 +54,15 @@ public static class FakturaMapping
     }
 
     /// <summary>Buduje encje faktury zakupu z XML pobranego z KSeF.</summary>
-    public static Invoice ZakupZXml(string xml, string? numerKsef = null)
-        => ZImportu(xml, KierunekFaktury.Zakup, numerKsef);
+    public static Invoice ZakupZXml(string xml, int companyId, string? numerKsef = null)
+        => ZImportu(xml, companyId, KierunekFaktury.Zakup, numerKsef);
 
     /// <summary>
     /// Buduje encje zaimportowanej faktury z surowego XML pobranego z KSeF.
     /// Kontrahent zalezy od kierunku: dla zakupu - sprzedawca (Podmiot1),
     /// dla sprzedazy - nabywca (Podmiot2). Dane podsumowujace z modelu FA(3).
     /// </summary>
-    public static Invoice ZImportu(string xml, KierunekFaktury kierunek, string? numerKsef = null)
+    public static Invoice ZImportu(string xml, int companyId, KierunekFaktury kierunek, string? numerKsef = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(xml);
         var fa = Fa3Serializer.FromXml(xml);
@@ -81,6 +82,7 @@ public static class FakturaMapping
 
         return new Invoice
         {
+            CompanyId = companyId,
             Kierunek = kierunek,
             Status = StatusFaktury.Zaimportowana,
             Numer = fa.Fa.P2,

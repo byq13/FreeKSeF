@@ -25,6 +25,7 @@ public sealed class ContractorsViewModel : ViewModelBase
         ZapiszCommand = new RelayCommand(Zapisz);
         UsunCommand = new RelayCommand(Usun, () => _id > 0);
         PobierzZGusCommand = new RelayCommand(PobierzZGus, () => !_zajety);
+        AppServices.FirmyZmienione += () => { Wczytaj(); Nowy(); };
         Wczytaj();
     }
 
@@ -57,9 +58,10 @@ public sealed class ContractorsViewModel : ViewModelBase
 
     public void Wczytaj()
     {
+        var firmaId = AppServices.AktywnaFirmaId;
         Kontrahenci.Clear();
         using var db = AppServices.Db();
-        foreach (var c in db.Contractors.OrderBy(x => x.Nazwa))
+        foreach (var c in db.Contractors.Where(c => c.CompanyId == firmaId).OrderBy(x => x.Nazwa))
             Kontrahenci.Add(c);
     }
 
@@ -81,6 +83,7 @@ public sealed class ContractorsViewModel : ViewModelBase
 
         using var db = AppServices.Db();
         var c = _id > 0 ? db.Contractors.Find(_id) ?? new Contractor() : new Contractor();
+        c.CompanyId = AppServices.AktywnaFirmaId;
         c.Nazwa = Nazwa.Trim();
         c.Nip = string.IsNullOrWhiteSpace(Nip) ? null : Core.Models.Nip.Normalizuj(Nip);
         c.AdresL1 = AdresL1.Trim();

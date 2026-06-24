@@ -27,6 +27,12 @@ public partial class MainWindow : Window
             case NewInvoiceViewModel nowa:
                 nowa.Odswiez();
                 break;
+            case ContractorsViewModel kontrahenci:
+                kontrahenci.Wczytaj();
+                break;
+            case SettingsViewModel ustawienia:
+                ustawienia.Wczytaj();
+                break;
         }
     }
 }

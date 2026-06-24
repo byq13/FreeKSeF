@@ -4,17 +4,19 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace FreeKSeF.Data;
 
 /// <summary>
-/// Tworzy kontekst bazy na pliku SQLite. Domyslnie plik w katalogu danych aplikacji
-/// uzytkownika (%AppData%\FreeKSeF\freeksef.db na Windows).
+/// Tworzy kontekst bazy na pliku SQLite. Baza lezy OBOK pliku exe (freeksef.db),
+/// dzieki czemu aplikacja jest przenosna (np. na pendrive) i nie wymaga plikow
+/// konfiguracyjnych - wszystkie ustawienia trzymamy w bazie.
 /// </summary>
 public static class FreeKSeFDb
 {
     public static string DomyslnaSciezka()
     {
-        var dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "FreeKSeF");
-        Directory.CreateDirectory(dir);
+        // Katalog pliku exe (dla single-file ProcessPath wskazuje realny exe, nie temp).
+        var exe = Environment.ProcessPath;
+        var dir = !string.IsNullOrEmpty(exe)
+            ? Path.GetDirectoryName(exe)!
+            : AppContext.BaseDirectory;
         return Path.Combine(dir, "freeksef.db");
     }
 

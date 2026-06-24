@@ -17,6 +17,10 @@ nie pobierzesz starszej faktury zakupu. A samo **API KSeF jest darmowe**.
 - 📤 **Wysyłka do KSeF** — tylko na wyraźne polecenie z **potwierdzeniem** + odbiór **UPO**.
 - 📥 **Import faktur zakupu z KSeF po dowolnym zakresie dat** — bez limitu 30 dni,
   z **oszczędzaniem limitu** 64 zapytań/h (pomija faktury już pobrane).
+- 🏢 **Obsługa wielu firm** — każda z własnymi fakturami, kontrahentami, tokenem i środowiskiem;
+  przełącznik aktywnej firmy u góry okna.
+- 🧳 **Przenośność** — baza `freeksef.db` leży **obok pliku exe** (pendrive), bez plików
+  konfiguracyjnych; wszystkie ustawienia trzymane w bazie.
 
 Planowane dalej: magazyn, pobieranie danych po NIP (GUS), korekty,
 logowanie podpisem kwalifikowanym (XAdES).

@@ -6,44 +6,74 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="560" HorizontalAlignment="Left" Margin="12">
-            <TextBlock Text="Dane firmy (sprzedawcy)" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="12" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
 
-            <Label Content="NIP" />
-            <TextBox Text="{Binding Nip, UpdateSourceTrigger=PropertyChanged}" />
+        <DockPanel Grid.Column="0">
+            <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6">
+                <Run Text="Aktywna firma: " FontWeight="SemiBold" />
+                <Run Text="{Binding AktywnaFirmaNazwa, Mode=OneWay}" Foreground="#1F2937" />
+            </TextBlock>
+            <DataGrid ItemsSource="{Binding Firmy}" SelectedItem="{Binding Wybrana}" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Firma" Binding="{Binding Nazwa}" Width="*" />
+                    <DataGridTextColumn Header="NIP" Binding="{Binding Nip}" Width="120" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
 
-            <Label Content="Nazwa firmy" />
-            <TextBox Text="{Binding Nazwa, UpdateSourceTrigger=PropertyChanged}" />
+        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="560" HorizontalAlignment="Left">
+                <TextBlock Text="Dane firmy (sprzedawcy)" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
 
-            <Label Content="Adres — linia 1 (ulica i numer)" />
-            <TextBox Text="{Binding AdresL1, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Content="NIP" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding Nip, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Content="Pobierz z GUS" Command="{Binding PobierzZGusCommand}"
+                            Margin="8,2,0,6" VerticalAlignment="Center" />
+                </Grid>
 
-            <Label Content="Adres — linia 2 (kod i miejscowosc)" />
-            <TextBox Text="{Binding AdresL2, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Content="Nazwa firmy" />
+                <TextBox Text="{Binding Nazwa, UpdateSourceTrigger=PropertyChanged}" />
 
-            <Label Content="Numer rachunku bankowego (domyslny)" />
-            <TextBox Text="{Binding NrRachunku, UpdateSourceTrigger=PropertyChanged}" />
+                <Label Content="Adres — linia 1 (ulica i numer)" />
+                <TextBox Text="{Binding AdresL1, UpdateSourceTrigger=PropertyChanged}" />
 
-            <TextBlock Text="Polaczenie z KSeF" FontSize="16" FontWeight="Bold" Margin="0,16,0,8" />
+                <Label Content="Adres — linia 2 (kod i miejscowość)" />
+                <TextBox Text="{Binding AdresL2, UpdateSourceTrigger=PropertyChanged}" />
 
-            <Label Content="Srodowisko" />
-            <ComboBox ItemsSource="{Binding Srodowiska}" SelectedItem="{Binding Srodowisko}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+                <Label Content="Numer rachunku bankowego (domyślny)" />
+                <TextBox Text="{Binding NrRachunku, UpdateSourceTrigger=PropertyChanged}" />
 
-            <Label Content="Token KSeF (wpisz, aby ustawic/zmienic)" />
-            <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
-            <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
+                <TextBlock Text="Połączenie z KSeF" FontSize="16" FontWeight="Bold" Margin="0,16,0,8" />
 
-            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                <Button Content="Zapisz ustawienia" Command="{Binding ZapiszCommand}" />
-                <Button Content="Testuj polaczenie" Command="{Binding TestujPolaczenieCommand}" Margin="8,0,0,0" />
+                <Label Content="Środowisko" />
+                <ComboBox ItemsSource="{Binding Srodowiska}" SelectedItem="{Binding Srodowisko}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate><TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" /></DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <Label Content="Token KSeF (wpisz, aby ustawić/zmienić)" />
+                <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
+                <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
+
+                <WrapPanel Margin="0,8,0,0">
+                    <Button Content="Nowa" Command="{Binding NowyCommand}" />
+                    <Button Content="Zapisz" Command="{Binding ZapiszCommand}" />
+                    <Button Content="Usuń" Command="{Binding UsunCommand}" />
+                    <Button Content="Ustaw jako aktywną" Command="{Binding UstawAktywnaCommand}" />
+                    <Button Content="Testuj połączenie" Command="{Binding TestujPolaczenieCommand}" />
+                </WrapPanel>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

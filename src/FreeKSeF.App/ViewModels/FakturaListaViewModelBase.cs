@@ -45,6 +45,9 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         ZapiszXmlCommand = new RelayCommand(ZapiszXml, () => Wybrany is not null);
         ZaznaczCommand = new RelayCommand(Zaznacz, () => Wybrany is not null);
         UsunCommand = new RelayCommand(Usun, () => Wybrany is not null);
+
+        // Zmiana aktywnej firmy = inne dane na liscie.
+        AppServices.FirmyZmienione += Odswiez;
     }
 
     public ObservableCollection<FakturaRow> Wiersze { get; } = new();
@@ -100,7 +103,8 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         var (od, doDaty) = ZakresDat(_okres);
 
         using var db = AppServices.Db();
-        var q = db.Invoices.AsNoTracking().Where(i => i.Kierunek == _kierunek);
+        var firmaId = AppServices.AktywnaFirmaId;
+        var q = db.Invoices.AsNoTracking().Where(i => i.CompanyId == firmaId && i.Kierunek == _kierunek);
         if (od is { } o) q = q.Where(i => i.DataWystawienia >= o);
         if (doDaty is { } d) q = q.Where(i => i.DataWystawienia <= d);
 

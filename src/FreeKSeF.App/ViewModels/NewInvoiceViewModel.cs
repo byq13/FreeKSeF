@@ -40,6 +40,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         ZapiszIPodgladCommand = new RelayCommand(ZapiszIPodglad);
         EksportujXmlCommand = new RelayCommand(EksportujXml);
         PobierzZGusCommand = new RelayCommand(PobierzZGus, () => !_zajetyGus);
+        AppServices.FirmyZmienione += Odswiez;
         Odswiez();
     }
 
@@ -89,26 +90,28 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     /// <summary>Przeladowuje dane pomocnicze (kontrahenci, nr konta, propozycja numeru).</summary>
     public void Odswiez()
     {
+        var firmaId = AppServices.AktywnaFirmaId;
         Kontrahenci.Clear();
         using var db = AppServices.Db();
-        foreach (var c in db.Contractors.OrderBy(x => x.Nazwa))
+        foreach (var c in db.Contractors.Where(c => c.CompanyId == firmaId).OrderBy(x => x.Nazwa))
             Kontrahenci.Add(c);
 
-        var firma = db.Companies.OrderBy(x => x.Id).FirstOrDefault();
+        var firma = firmaId != 0 ? db.Companies.Find(firmaId) : null;
         if (firma is not null && string.IsNullOrWhiteSpace(NrRachunku))
             NrRachunku = firma.NrRachunku ?? string.Empty;
 
         if (string.IsNullOrWhiteSpace(Numer))
-            Numer = ProponowanyNumer(db);
+            Numer = ProponowanyNumer(db, firmaId);
 
         if (Pozycje.Count == 0)
             DodajPozycje();
     }
 
-    private static string ProponowanyNumer(FreeKSeFDbContext db)
+    private static string ProponowanyNumer(FreeKSeFDbContext db, int firmaId)
     {
         var teraz = DateTime.Today;
         var wTymMiesiacu = db.Invoices.Count(i =>
+            i.CompanyId == firmaId &&
             i.Kierunek == KierunekFaktury.Sprzedaz &&
             i.DataWystawienia.Year == teraz.Year &&
             i.DataWystawienia.Month == teraz.Month);
@@ -145,10 +148,10 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     private FakturaModel? ZbudujModel()
     {
         using var db = AppServices.Db();
-        var firma = db.Companies.OrderBy(x => x.Id).FirstOrDefault();
+        var firma = AppServices.AktywnaFirmaId != 0 ? db.Companies.Find(AppServices.AktywnaFirmaId) : null;
         if (firma is null)
         {
-            MessageBox.Show("Najpierw uzupelnij dane firmy w zakladce Ustawienia.", "Brak danych firmy",
+            MessageBox.Show("Najpierw dodaj i wybierz firme w zakladce Ustawienia.", "Brak firmy",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return null;
         }
@@ -199,12 +202,13 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             return null;
         }
 
+        var firmaId = AppServices.AktywnaFirmaId;
         using var db = AppServices.Db();
-        var inv = FakturaMapping.ToEntity(model);
+        var inv = FakturaMapping.ToEntity(model, firmaId);
         inv.Status = status;
         db.Invoices.Add(inv);
 
-        DopiszKontrahenta(db, model.Nabywca);
+        DopiszKontrahenta(db, firmaId, model.Nabywca);
         db.SaveChanges();
 
         if (!string.IsNullOrEmpty(komunikat))
@@ -310,15 +314,16 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Dodaje nabywce do slownika kontrahentow, jesli ma NIP i jeszcze go nie ma.</summary>
-    private static void DopiszKontrahenta(FreeKSeFDbContext db, Strona nabywca)
+    /// <summary>Dodaje nabywce do slownika kontrahentow firmy, jesli ma NIP i jeszcze go nie ma.</summary>
+    private static void DopiszKontrahenta(FreeKSeFDbContext db, int firmaId, Strona nabywca)
     {
         var nip = Core.Models.Nip.Normalizuj(nabywca.Nip);
-        if (string.IsNullOrEmpty(nip)) return;            // osoba prywatna - pomijamy
-        if (db.Contractors.Any(c => c.Nip == nip)) return; // juz znany
+        if (string.IsNullOrEmpty(nip)) return;                               // osoba prywatna - pomijamy
+        if (db.Contractors.Any(c => c.CompanyId == firmaId && c.Nip == nip)) return; // juz znany
 
         db.Contractors.Add(new Contractor
         {
+            CompanyId = firmaId,
             Nip = nip,
             Nazwa = nabywca.Nazwa,
             AdresL1 = nabywca.Adres.AdresL1,

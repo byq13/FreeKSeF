@@ -84,9 +84,11 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
             ImportStatus = "Logowanie do KSeF...";
             await AppServices.ZalogujZUstawienAsync();
 
+            var firmaId = AppServices.AktywnaFirmaId;
             HashSet<string> posiadane;
             using (var db = AppServices.Db())
-                posiadane = db.Invoices.Where(i => i.NumerKsef != null).Select(i => i.NumerKsef!).ToHashSet();
+                posiadane = db.Invoices.Where(i => i.CompanyId == firmaId && i.NumerKsef != null)
+                    .Select(i => i.NumerKsef!).ToHashSet();
 
             ImportStatus = "Sprawdzanie listy faktur w KSeF...";
             var (od, doDaty) = ZakresImportu();
@@ -116,11 +118,12 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
 
     private bool ZapiszPobranaSprzedaz(Ksef.FakturaZKsef faktura)
     {
+        var firmaId = AppServices.AktywnaFirmaId;
         using var db = AppServices.Db();
-        if (db.Invoices.Any(i => i.NumerKsef == faktura.NumerKsef))
+        if (db.Invoices.Any(i => i.CompanyId == firmaId && i.NumerKsef == faktura.NumerKsef))
             return false;
 
-        var inv = FakturaMapping.ZImportu(faktura.Xml, KierunekFaktury.Sprzedaz, faktura.NumerKsef);
+        var inv = FakturaMapping.ZImportu(faktura.Xml, firmaId, KierunekFaktury.Sprzedaz, faktura.NumerKsef);
         db.Invoices.Add(inv);
         db.SaveChanges();
 

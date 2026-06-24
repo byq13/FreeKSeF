@@ -34,14 +34,14 @@ public class FreeKSeFDbContext : DbContext
         modelBuilder.Entity<Invoice>(e =>
         {
             e.HasIndex(i => i.NumerKsef);
-            e.HasIndex(i => new { i.Kierunek, i.DataWystawienia });
+            e.HasIndex(i => new { i.CompanyId, i.Kierunek, i.DataWystawienia });
             e.HasMany(i => i.Pozycje)
                 .WithOne(p => p.Invoice!)
                 .HasForeignKey(p => p.InvoiceId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<Contractor>().HasIndex(c => c.Nip);
+        modelBuilder.Entity<Contractor>().HasIndex(c => new { c.CompanyId, c.Nip });
 
         modelBuilder.Entity<Ustawienie>().HasKey(u => u.Klucz);
     }

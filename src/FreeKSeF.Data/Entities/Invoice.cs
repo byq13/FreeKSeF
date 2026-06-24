@@ -8,6 +8,9 @@ public class Invoice
 {
     public int Id { get; set; }
 
+    /// <summary>Firma (wlasciciel) - faktury sa izolowane per firma.</summary>
+    public int CompanyId { get; set; }
+
     public KierunekFaktury Kierunek { get; set; }
     public StatusFaktury Status { get; set; }
 

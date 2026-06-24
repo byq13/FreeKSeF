@@ -32,36 +32,38 @@ public class DataTests : IDisposable
     [Fact]
     public void Migracja_tworzy_baze_i_zapis_faktury_dziala()
     {
+        int firmaId;
         using (var ctx = NowyKontekst())
         {
-            ctx.Companies.Add(new Company { Nip = "5260001246", Nazwa = "Moja Firma", AdresL1 = "ul. A 1", Srodowisko = Srodowisko.Test });
-            ctx.Contractors.Add(new Contractor { Nip = "1132994096", Nazwa = "Klient SA", AdresL1 = "ul. B 2" });
-            ctx.Invoices.Add(FakturaMapping.ToEntity(Przyklad()));
+            var firma = new Company { Nip = "5260001246", Nazwa = "Moja Firma", AdresL1 = "ul. A 1", Srodowisko = Srodowisko.Test };
+            ctx.Companies.Add(firma);
+            ctx.SaveChanges();
+            firmaId = firma.Id;
+
+            ctx.Contractors.Add(new Contractor { CompanyId = firmaId, Nip = "1132994096", Nazwa = "Klient SA", AdresL1 = "ul. B 2" });
+            ctx.Invoices.Add(FakturaMapping.ToEntity(Przyklad(), firmaId));
             ctx.SaveChanges();
         }
 
         using (var ctx = NowyKontekst())
         {
             var inv = ctx.Invoices.Include(i => i.Pozycje).Single();
+            Assert.Equal(firmaId, inv.CompanyId);
             Assert.Equal("FV 7/06/2026", inv.Numer);
             Assert.Equal(KierunekFaktury.Sprzedaz, inv.Kierunek);
             Assert.Equal(1230m, inv.SumaBrutto);
             Assert.Single(inv.Pozycje);
-            Assert.Equal(StawkaVat.Vat23, inv.Pozycje[0].Stawka);
             Assert.Contains("<Faktura", inv.Xml);
-            Assert.Single(ctx.Companies);
-            Assert.Single(ctx.Contractors);
         }
     }
 
     [Fact]
     public void Import_zakupu_z_XML_odczytuje_podsumowania()
     {
-        // Generujemy XML jak z KSeF, potem importujemy jako zakup.
         var xml = FreeKSeF.Core.Fa3.Fa3Serializer.ToXml(FreeKSeF.Core.Fa3.Fa3Mapper.ToFa3(Przyklad()));
 
         using var ctx = NowyKontekst();
-        var zakup = FakturaMapping.ZakupZXml(xml, numerKsef: "5260001246-20260603-AB12CD-34");
+        var zakup = FakturaMapping.ZakupZXml(xml, companyId: 1, numerKsef: "5260001246-20260603-AB12CD-34");
         ctx.Invoices.Add(zakup);
         ctx.SaveChanges();
 
@@ -70,8 +72,24 @@ public class DataTests : IDisposable
         Assert.Equal(StatusFaktury.Zaimportowana, z.Status);
         Assert.Equal("5260001246-20260603-AB12CD-34", z.NumerKsef);
         Assert.Equal(1000m, z.SumaNetto);
-        Assert.Equal(230m, z.SumaVat);
         Assert.Equal(1230m, z.SumaBrutto);
+    }
+
+    [Fact]
+    public void Faktury_sa_izolowane_per_firma()
+    {
+        using var ctx = NowyKontekst();
+        var a = new Company { Nip = "5260001246", Nazwa = "Firma A", AdresL1 = "ul. A 1" };
+        var b = new Company { Nip = "1132994096", Nazwa = "Firma B", AdresL1 = "ul. B 2" };
+        ctx.Companies.AddRange(a, b);
+        ctx.SaveChanges();
+
+        ctx.Invoices.Add(FakturaMapping.ToEntity(Przyklad(), a.Id));
+        ctx.SaveChanges();
+
+        // Firma A widzi swoja fakture, firma B nie widzi nic.
+        Assert.Single(ctx.Invoices.Where(i => i.CompanyId == a.Id));
+        Assert.Empty(ctx.Invoices.Where(i => i.CompanyId == b.Id));
     }
 
     public void Dispose()

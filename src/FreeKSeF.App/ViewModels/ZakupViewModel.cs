@@ -38,9 +38,11 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
             await AppServices.ZalogujZUstawienAsync();
 
             // Numery KSeF, ktore juz mamy - NIE pobieramy ich ponownie (oszczednosc zetonow).
+            var firmaId = AppServices.AktywnaFirmaId;
             HashSet<string> posiadane;
             using (var db = AppServices.Db())
-                posiadane = db.Invoices.Where(i => i.NumerKsef != null).Select(i => i.NumerKsef!).ToHashSet();
+                posiadane = db.Invoices.Where(i => i.CompanyId == firmaId && i.NumerKsef != null)
+                    .Select(i => i.NumerKsef!).ToHashSet();
 
             ImportStatus = "Sprawdzanie listy faktur w KSeF...";
             var (od, doDaty) = ZakresImportu();
@@ -70,11 +72,12 @@ public sealed class ZakupViewModel : FakturaListaViewModelBase
 
     private bool ZapiszPobranaFakture(Ksef.FakturaZKsef faktura)
     {
+        var firmaId = AppServices.AktywnaFirmaId;
         using var db = AppServices.Db();
-        if (db.Invoices.Any(i => i.NumerKsef == faktura.NumerKsef))
+        if (db.Invoices.Any(i => i.CompanyId == firmaId && i.NumerKsef == faktura.NumerKsef))
             return false;
 
-        var inv = FakturaMapping.ZakupZXml(faktura.Xml, faktura.NumerKsef);
+        var inv = FakturaMapping.ZakupZXml(faktura.Xml, firmaId, faktura.NumerKsef);
         db.Invoices.Add(inv);
         db.SaveChanges();
 
