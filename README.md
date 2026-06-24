@@ -1,10 +1,12 @@
+# FreeKSeF — AI
+
+Program stworzony przez CLAUDE CODE. 
+
 # FreeKSeF — Szybka Faktura KSeF
 
 Darmowa, prosta aplikacja desktopowa (Windows, .NET/WPF) do faktur **KSeF** dla
 jednoosobowych firm usługowych (JDG). Powstała, bo każdy wygodny interfejs do
-faktur (Aplikacja Podatnika, drogie chmury programów księgowych) jest płatny lub
-okrojony — np. **Aplikacja Podatnika pokazuje historię tylko 30 dni wstecz**, więc
-nie pobierzesz starszej faktury zakupu. A samo **API KSeF jest darmowe**.
+faktur.
 
 ## Co potrafi
 
