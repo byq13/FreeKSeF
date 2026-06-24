@@ -89,10 +89,14 @@
                 </DataGrid.Columns>
             </DataGrid>
 
-            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                <Button Content="Dodaj pozycje" Command="{Binding DodajPozycjeCommand}" />
-                <Button Content="Usun pozycje" Command="{Binding UsunPozycjeCommand}" />
-            </StackPanel>
+            <WrapPanel Margin="0,4,0,0">
+                <Button Content="Dodaj pozycję" Command="{Binding DodajPozycjeCommand}" />
+                <Button Content="Usuń pozycję" Command="{Binding UsunPozycjeCommand}" />
+                <TextBlock Text="z bazy:" VerticalAlignment="Center" Margin="16,0,6,0" />
+                <ComboBox MinWidth="220" ItemsSource="{Binding Produkty}" SelectedItem="{Binding WybranyProdukt}"
+                          DisplayMemberPath="Nazwa" />
+                <Button Content="Dodaj z bazy" Command="{Binding DodajZProduktuCommand}" Margin="6,0,0,0" />
+            </WrapPanel>
 
             <Grid Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>

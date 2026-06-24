@@ -37,6 +37,9 @@
             <TabItem Header="Kontrahenci">
                 <views:ContractorsView DataContext="{Binding Kontrahenci}" />
             </TabItem>
+            <TabItem Header="Produkty">
+                <views:ProductsView DataContext="{Binding Produkty}" />
+            </TabItem>
             <TabItem Header="Ustawienia">
                 <views:SettingsView DataContext="{Binding Ustawienia}" />
             </TabItem>

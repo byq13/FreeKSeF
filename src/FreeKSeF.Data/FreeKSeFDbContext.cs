@@ -18,6 +18,7 @@ public class FreeKSeFDbContext : DbContext
     public DbSet<KsefLog> KsefLogs => Set<KsefLog>();
     public DbSet<Ustawienie> Ustawienia => Set<Ustawienie>();
     public DbSet<KursWaluty> Kursy => Set<KursWaluty>();
+    public DbSet<Product> Products => Set<Product>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,5 +52,7 @@ public class FreeKSeFDbContext : DbContext
             e.HasIndex(k => new { k.Kod, k.Data }).IsUnique();
             e.Property(k => k.Kurs).HasPrecision(18, 6); // kursy NBP maja 4 miejsca; zapas
         });
+
+        modelBuilder.Entity<Product>().HasIndex(p => new { p.CompanyId, p.Nazwa });
     }
 }

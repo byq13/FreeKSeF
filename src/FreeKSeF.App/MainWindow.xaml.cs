@@ -30,6 +30,9 @@ public partial class MainWindow : Window
             case ContractorsViewModel kontrahenci:
                 kontrahenci.Wczytaj();
                 break;
+            case ProductsViewModel produkty:
+                produkty.Wczytaj();
+                break;
             case SettingsViewModel ustawienia:
                 ustawienia.Wczytaj();
                 break;

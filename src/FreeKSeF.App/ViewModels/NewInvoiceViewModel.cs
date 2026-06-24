@@ -38,6 +38,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     {
         Pozycje.CollectionChanged += OnPozycjeChanged;
         DodajPozycjeCommand = new RelayCommand(DodajPozycje);
+        DodajZProduktuCommand = new RelayCommand(DodajZProduktu, () => WybranyProdukt is not null);
         UsunPozycjeCommand = new RelayCommand(UsunPozycje, () => WybranaPozycja is not null);
         ZapiszCommand = new RelayCommand(Zapisz);
         ZapiszIPodgladCommand = new RelayCommand(ZapiszIPodglad);
@@ -49,6 +50,10 @@ public sealed class NewInvoiceViewModel : ViewModelBase
 
     public ObservableCollection<PozycjaRow> Pozycje { get; } = new();
     public ObservableCollection<Contractor> Kontrahenci { get; } = new();
+    public ObservableCollection<Product> Produkty { get; } = new();
+
+    private Product? _wybranyProdukt;
+    public Product? WybranyProdukt { get => _wybranyProdukt; set => SetField(ref _wybranyProdukt, value); }
     public Array Stawki => Enum.GetValues(typeof(StawkaVat));
     public Array FormyPlatnosci => Enum.GetValues(typeof(FormaPlatnosci));
 
@@ -103,6 +108,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public decimal SumaBrutto => Pozycje.Sum(p => p.WartoscBrutto);
 
     public RelayCommand DodajPozycjeCommand { get; }
+    public RelayCommand DodajZProduktuCommand { get; }
     public RelayCommand UsunPozycjeCommand { get; }
     public RelayCommand ZapiszCommand { get; }
     public RelayCommand ZapiszIPodgladCommand { get; }
@@ -117,6 +123,10 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         using var db = AppServices.Db();
         foreach (var c in db.Contractors.Where(c => c.CompanyId == firmaId).OrderBy(x => x.Nazwa))
             Kontrahenci.Add(c);
+
+        Produkty.Clear();
+        foreach (var p in db.Products.Where(p => p.CompanyId == firmaId).OrderBy(x => x.Nazwa))
+            Produkty.Add(p);
 
         var firma = firmaId != 0 ? db.Companies.Find(firmaId) : null;
         if (firma is not null && string.IsNullOrWhiteSpace(NrRachunku))
@@ -143,6 +153,22 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     private void DodajPozycje()
     {
         var row = new PozycjaRow();
+        row.PropertyChanged += OnPozycjaPropertyChanged;
+        Pozycje.Add(row);
+        WybranaPozycja = row;
+    }
+
+    private void DodajZProduktu()
+    {
+        if (WybranyProdukt is not { } p) return;
+        var row = new PozycjaRow
+        {
+            Nazwa = p.Nazwa,
+            Jednostka = p.Jednostka,
+            Ilosc = 1m,
+            CenaNetto = p.CenaNetto,
+            Stawka = p.Stawka,
+        };
         row.PropertyChanged += OnPozycjaPropertyChanged;
         Pozycje.Add(row);
         WybranaPozycja = row;

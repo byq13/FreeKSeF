@@ -21,6 +21,7 @@ public sealed class MainViewModel : ViewModelBase
     public ZakupViewModel Zakup { get; } = new();
     public NewInvoiceViewModel NowaFaktura { get; } = new();
     public ContractorsViewModel Kontrahenci { get; } = new();
+    public ProductsViewModel Produkty { get; } = new();
     public SettingsViewModel Ustawienia { get; } = new();
 
     public ObservableCollection<Company> Firmy { get; } = new();
