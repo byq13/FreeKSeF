@@ -17,6 +17,7 @@ public class FreeKSeFDbContext : DbContext
     public DbSet<InvoiceItem> InvoiceItems => Set<InvoiceItem>();
     public DbSet<KsefLog> KsefLogs => Set<KsefLog>();
     public DbSet<Ustawienie> Ustawienia => Set<Ustawienie>();
+    public DbSet<KursWaluty> Kursy => Set<KursWaluty>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,5 +45,11 @@ public class FreeKSeFDbContext : DbContext
         modelBuilder.Entity<Contractor>().HasIndex(c => new { c.CompanyId, c.Nip });
 
         modelBuilder.Entity<Ustawienie>().HasKey(u => u.Klucz);
+
+        modelBuilder.Entity<KursWaluty>(e =>
+        {
+            e.HasIndex(k => new { k.Kod, k.Data }).IsUnique();
+            e.Property(k => k.Kurs).HasPrecision(18, 6); // kursy NBP maja 4 miejsca; zapas
+        });
     }
 }

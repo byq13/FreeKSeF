@@ -40,6 +40,9 @@
             <Label Content="Nazwa" />
             <TextBox Text="{Binding Nazwa, UpdateSourceTrigger=PropertyChanged}" />
 
+            <Label Content="Kraj" />
+            <ComboBox ItemsSource="{Binding Kraje}" SelectedItem="{Binding KodKraju}" IsEditable="True" />
+
             <Label Content="Adres — linia 1 (ulica i numer)" />
             <TextBox Text="{Binding AdresL1, UpdateSourceTrigger=PropertyChanged}" />
 

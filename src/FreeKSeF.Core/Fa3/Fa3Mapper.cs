@@ -53,15 +53,33 @@ public static class Fa3Mapper
 
     private static FakturaPodmiot2 BudujNabywce(Strona s)
     {
+        var kraj = string.IsNullOrWhiteSpace(s.Adres.KodKraju) ? "PL" : s.Adres.KodKraju.Trim();
+        var id = s.Nip?.Trim();
         var dane = new TPodmiot2 { Nazwa = s.Nazwa };
-        if (s.BrakNip || string.IsNullOrWhiteSpace(s.Nip))
+
+        if (s.BrakNip || string.IsNullOrWhiteSpace(id))
         {
+            // Osoba prywatna / brak identyfikatora.
             dane.BrakId = TWybor1.Item1;
             dane.BrakIdSpecified = true;
         }
+        else if (kraj.Equals("PL", StringComparison.OrdinalIgnoreCase))
+        {
+            dane.Nip = Nip.Normalizuj(id);
+        }
+        else if (KrajeUE.CzyUE(kraj))
+        {
+            // Kontrahent z UE - VAT UE (kod kraju + numer).
+            dane.KodUe = EnumZWartosci<TKodyKrajowUe>(kraj);
+            dane.KodUeSpecified = true;
+            dane.NrVatUe = id;
+        }
         else
         {
-            dane.Nip = s.Nip;
+            // Kontrahent spoza UE - dowolny identyfikator + kod kraju.
+            dane.KodKraju = EnumZWartosci<TKodKraju>(kraj);
+            dane.KodKrajuSpecified = true;
+            dane.NrId = id;
         }
 
         return new FakturaPodmiot2
@@ -99,8 +117,10 @@ public static class Fa3Mapper
             fa.P6Specified = true;
         }
 
-        UstawSumyVat(fa, m);
-        DodajWiersze(fa, m);
+        // Dla waluty obcej VAT (P_14_x) podaje sie w PLN wg kursu; kwoty netto/brutto w walucie.
+        var kurs = m.WalutaObca ? (m.Kurs > 0 ? m.Kurs : 1m) : 1m;
+        UstawSumyVat(fa, m, kurs);
+        DodajWiersze(fa, m, m.WalutaObca ? kurs : null);
         fa.Platnosc = BudujPlatnosc(m);
 
         return fa;
@@ -119,10 +139,17 @@ public static class Fa3Mapper
         PMarzy = new FakturaFaAdnotacjePMarzy { PPMarzyN = TWybor1.Item1, PPMarzyNSpecified = true },
     };
 
-    private static void UstawSumyVat(FakturaFa fa, FakturaModel m)
+    private static void UstawSumyVat(FakturaFa fa, FakturaModel m, decimal kurs)
     {
+        // Netto w walucie faktury; VAT przeliczony na PLN (kurs=1 dla PLN).
         decimal Netto(StawkaVat s) => m.Pozycje.Where(p => p.Stawka == s).Sum(p => p.WartoscNetto);
-        decimal Vat(StawkaVat s) => m.Pozycje.Where(p => p.Stawka == s).Sum(p => p.KwotaVat);
+        decimal VatPln(StawkaVat s)
+        {
+            var netto = Netto(s);
+            if (netto == 0m) return 0m;
+            var nettoPln = Math.Round(netto * kurs, 2, MidpointRounding.AwayFromZero);
+            return Math.Round(nettoPln * s.Procent(), 2, MidpointRounding.AwayFromZero);
+        }
 
         void Set(decimal value, Action<decimal> setVal, Action<bool> setSpec)
         {
@@ -131,25 +158,25 @@ public static class Fa3Mapper
 
         // 23% -> P_13_1 / P_14_1
         Set(Netto(StawkaVat.Vat23), v => fa.P131 = v, b => fa.P131Specified = b);
-        Set(Vat(StawkaVat.Vat23), v => fa.P141 = v, b => fa.P141Specified = b);
+        Set(VatPln(StawkaVat.Vat23), v => fa.P141 = v, b => fa.P141Specified = b);
         // 8% -> P_13_2 / P_14_2
         Set(Netto(StawkaVat.Vat8), v => fa.P132 = v, b => fa.P132Specified = b);
-        Set(Vat(StawkaVat.Vat8), v => fa.P142 = v, b => fa.P142Specified = b);
+        Set(VatPln(StawkaVat.Vat8), v => fa.P142 = v, b => fa.P142Specified = b);
         // 5% -> P_13_3 / P_14_3
         Set(Netto(StawkaVat.Vat5), v => fa.P133 = v, b => fa.P133Specified = b);
-        Set(Vat(StawkaVat.Vat5), v => fa.P143 = v, b => fa.P143Specified = b);
+        Set(VatPln(StawkaVat.Vat5), v => fa.P143 = v, b => fa.P143Specified = b);
         // 0% krajowa -> P_13_6_1 (bez kwoty podatku)
         Set(Netto(StawkaVat.Vat0), v => fa.P1361 = v, b => fa.P1361Specified = b);
         // zwolnione -> P_13_7
         Set(Netto(StawkaVat.Zwolniona), v => fa.P137 = v, b => fa.P137Specified = b);
     }
 
-    private static void DodajWiersze(FakturaFa fa, FakturaModel m)
+    private static void DodajWiersze(FakturaFa fa, FakturaModel m, decimal? kurs)
     {
         ulong nr = 1;
         foreach (var p in m.Pozycje)
         {
-            fa.FaWiersz.Add(new FakturaFaFaWiersz
+            var w = new FakturaFaFaWiersz
             {
                 NrWierszaFa = nr++,
                 P7 = p.Nazwa,
@@ -162,7 +189,13 @@ public static class Fa3Mapper
                 P11Specified = true,
                 P12 = MapStawka(p.Stawka),
                 P12Specified = true,
-            });
+            };
+            if (kurs is { } k)
+            {
+                w.KursWaluty = k;
+                w.KursWalutySpecified = true;
+            }
+            fa.FaWiersz.Add(w);
         }
     }
 

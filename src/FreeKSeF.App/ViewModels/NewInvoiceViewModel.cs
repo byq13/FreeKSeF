@@ -30,6 +30,9 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     private string _nrRachunku = string.Empty;
     private Contractor? _wybranyKontrahent;
     private bool _zajetyGus;
+    private string _waluta = "PLN";
+    private decimal _kurs = 1m;
+    private string _nabywcaKraj = "PL";
 
     public NewInvoiceViewModel()
     {
@@ -50,7 +53,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public Array FormyPlatnosci => Enum.GetValues(typeof(FormaPlatnosci));
 
     public string Numer { get => _numer; set => SetField(ref _numer, value); }
-    public DateTime DataWystawienia { get => _dataWystawienia; set => SetField(ref _dataWystawienia, value); }
+    public DateTime DataWystawienia { get => _dataWystawienia; set { if (SetField(ref _dataWystawienia, value)) PrzeliczKurs(); } }
     public DateTime? DataSprzedazy { get => _dataSprzedazy; set => SetField(ref _dataSprzedazy, value); }
     public string NabywcaNip { get => _nabywcaNip; set => SetField(ref _nabywcaNip, value); }
     public string NabywcaNazwa { get => _nabywcaNazwa; set => SetField(ref _nabywcaNazwa, value); }
@@ -59,6 +62,24 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public FormaPlatnosci FormaPlatnosci { get => _formaPlatnosci; set => SetField(ref _formaPlatnosci, value); }
     public DateTime? TerminPlatnosci { get => _terminPlatnosci; set => SetField(ref _terminPlatnosci, value); }
     public string NrRachunku { get => _nrRachunku; set => SetField(ref _nrRachunku, value); }
+
+    public IReadOnlyList<string> Waluty => Slowniki.Waluty;
+    public IReadOnlyList<string> Kraje => Slowniki.Kraje;
+
+    public string Waluta
+    {
+        get => _waluta;
+        set { if (SetField(ref _waluta, value)) { OnPropertyChanged(nameof(KursWidoczny)); PrzeliczKurs(); } }
+    }
+
+    /// <summary>Kurs do PLN (dla walut obcych); pole edytowalne, prefill z NBP.</summary>
+    public decimal Kurs { get => _kurs; set => SetField(ref _kurs, value); }
+
+    /// <summary>Kurs pokazujemy/edytujemy tylko dla waluty innej niz PLN.</summary>
+    public bool KursWidoczny => !string.Equals(Waluta, "PLN", StringComparison.OrdinalIgnoreCase);
+
+    public string NabywcaKraj { get => _nabywcaKraj; set => SetField(ref _nabywcaKraj, value); }
+
     private PozycjaRow? _wybranaPozycja;
     public PozycjaRow? WybranaPozycja { get => _wybranaPozycja; set => SetField(ref _wybranaPozycja, value); }
 
@@ -73,6 +94,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             NabywcaNazwa = value.Nazwa;
             NabywcaAdresL1 = value.AdresL1;
             NabywcaAdresL2 = value.AdresL2 ?? string.Empty;
+            NabywcaKraj = string.IsNullOrWhiteSpace(value.KodKraju) ? "PL" : value.KodKraju;
         }
     }
 
@@ -167,6 +189,8 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             Numer = Numer.Trim(),
             DataWystawienia = DataWystawienia,
             DataSprzedazy = DataSprzedazy,
+            Waluta = Waluta,
+            Kurs = KursWidoczny ? (Kurs > 0 ? Kurs : 1m) : 1m,
             Sprzedawca = new Strona
             {
                 Nip = firma.Nip,
@@ -178,13 +202,29 @@ public sealed class NewInvoiceViewModel : ViewModelBase
                 Nip = string.IsNullOrWhiteSpace(NabywcaNip) ? null : NabywcaNip.Trim(),
                 BrakNip = string.IsNullOrWhiteSpace(NabywcaNip),
                 Nazwa = NabywcaNazwa.Trim(),
-                Adres = new Adres { AdresL1 = NabywcaAdresL1.Trim(), AdresL2 = string.IsNullOrWhiteSpace(NabywcaAdresL2) ? null : NabywcaAdresL2.Trim() },
+                Adres = new Adres
+                {
+                    KodKraju = string.IsNullOrWhiteSpace(NabywcaKraj) ? "PL" : NabywcaKraj,
+                    AdresL1 = NabywcaAdresL1.Trim(),
+                    AdresL2 = string.IsNullOrWhiteSpace(NabywcaAdresL2) ? null : NabywcaAdresL2.Trim(),
+                },
             },
             FormaPlatnosci = FormaPlatnosci,
             TerminPlatnosci = TerminPlatnosci,
             NrRachunku = string.IsNullOrWhiteSpace(NrRachunku) ? null : NrRachunku.Trim(),
             Pozycje = Pozycje.Select(p => p.ToModel()).ToList(),
         };
+    }
+
+    private async void PrzeliczKurs()
+    {
+        if (!KursWidoczny) { Kurs = 1m; return; }
+        try
+        {
+            var k = await KursyService.KursDoFakturyAsync(Waluta, DataWystawienia);
+            if (k is { } v) Kurs = v;
+        }
+        catch { /* brak kursu - user wpisze recznie */ }
     }
 
     private Invoice? ZapiszDoBazy(StatusFaktury status, string komunikat)
@@ -269,6 +309,9 @@ public sealed class NewInvoiceViewModel : ViewModelBase
         DataSprzedazy = DateTime.Today;
         WybranyKontrahent = null;
         NabywcaNip = NabywcaNazwa = NabywcaAdresL1 = NabywcaAdresL2 = string.Empty;
+        NabywcaKraj = "PL";
+        Waluta = "PLN";
+        Kurs = 1m;
         TerminPlatnosci = DateTime.Today.AddDays(14);
 
         foreach (var p in Pozycje.ToList())
@@ -326,6 +369,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             CompanyId = firmaId,
             Nip = nip,
             Nazwa = nabywca.Nazwa,
+            KodKraju = string.IsNullOrWhiteSpace(nabywca.Adres.KodKraju) ? "PL" : nabywca.Adres.KodKraju,
             AdresL1 = nabywca.Adres.AdresL1,
             AdresL2 = nabywca.Adres.AdresL2,
         });

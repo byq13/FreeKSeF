@@ -17,6 +17,7 @@ public sealed class ContractorsViewModel : ViewModelBase
     private string _nip = string.Empty;
     private string _adresL1 = string.Empty;
     private string _adresL2 = string.Empty;
+    private string _kodKraju = "PL";
     private bool _zajety;
 
     public ContractorsViewModel()
@@ -41,6 +42,7 @@ public sealed class ContractorsViewModel : ViewModelBase
             _id = value.Id;
             Nazwa = value.Nazwa;
             Nip = value.Nip ?? string.Empty;
+            KodKraju = string.IsNullOrWhiteSpace(value.KodKraju) ? "PL" : value.KodKraju;
             AdresL1 = value.AdresL1;
             AdresL2 = value.AdresL2 ?? string.Empty;
         }
@@ -48,8 +50,10 @@ public sealed class ContractorsViewModel : ViewModelBase
 
     public string Nazwa { get => _nazwa; set => SetField(ref _nazwa, value); }
     public string Nip { get => _nip; set => SetField(ref _nip, value); }
+    public string KodKraju { get => _kodKraju; set => SetField(ref _kodKraju, value); }
     public string AdresL1 { get => _adresL1; set => SetField(ref _adresL1, value); }
     public string AdresL2 { get => _adresL2; set => SetField(ref _adresL2, value); }
+    public IReadOnlyList<string> Kraje => Slowniki.Kraje;
 
     public RelayCommand NowyCommand { get; }
     public RelayCommand ZapiszCommand { get; }
@@ -71,6 +75,7 @@ public sealed class ContractorsViewModel : ViewModelBase
         OnPropertyChanged(nameof(Wybrany));
         _id = 0;
         Nazwa = Nip = AdresL1 = AdresL2 = string.Empty;
+        KodKraju = "PL";
     }
 
     private void Zapisz()
@@ -85,6 +90,7 @@ public sealed class ContractorsViewModel : ViewModelBase
         var c = _id > 0 ? db.Contractors.Find(_id) ?? new Contractor() : new Contractor();
         c.CompanyId = AppServices.AktywnaFirmaId;
         c.Nazwa = Nazwa.Trim();
+        c.KodKraju = string.IsNullOrWhiteSpace(KodKraju) ? "PL" : KodKraju.Trim();
         c.Nip = string.IsNullOrWhiteSpace(Nip) ? null : Core.Models.Nip.Normalizuj(Nip);
         c.AdresL1 = AdresL1.Trim();
         c.AdresL2 = string.IsNullOrWhiteSpace(AdresL2) ? null : AdresL2.Trim();

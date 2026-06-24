@@ -89,4 +89,55 @@ public class Fa3GenerationTests
         var wynik = Fa3Validator.Validate(xml);
         Assert.True(wynik.IsValid, string.Join("\n", wynik.Errors));
     }
+
+    [Fact]
+    public void Nabywca_z_UE_waliduje_sie()
+    {
+        var model = PrzykladowaFaktura();
+        model.Nabywca = new Strona
+        {
+            Nip = "811569869",
+            Nazwa = "Muster GmbH",
+            Adres = new Adres { KodKraju = "DE", AdresL1 = "Hauptstr. 1", AdresL2 = "10115 Berlin" },
+        };
+
+        var xml = Fa3Serializer.ToXml(Fa3Mapper.ToFa3(model));
+        Assert.True(Fa3Validator.Validate(xml).IsValid);
+        Assert.Contains("<KodUE>DE</KodUE>", xml);
+        Assert.Contains("<NrVatUE>811569869</NrVatUE>", xml);
+    }
+
+    [Fact]
+    public void Nabywca_spoza_UE_waliduje_sie()
+    {
+        var model = PrzykladowaFaktura();
+        model.Nabywca = new Strona
+        {
+            Nip = "12-3456789",
+            Nazwa = "Acme Inc.",
+            Adres = new Adres { KodKraju = "US", AdresL1 = "1 Main St", AdresL2 = "New York, NY 10001" },
+        };
+
+        var xml = Fa3Serializer.ToXml(Fa3Mapper.ToFa3(model));
+        Assert.True(Fa3Validator.Validate(xml).IsValid);
+        Assert.Contains("<KodKraju>US</KodKraju>", xml);
+        Assert.Contains("<NrID>12-3456789</NrID>", xml);
+    }
+
+    [Fact]
+    public void Faktura_w_EUR_ma_VAT_w_PLN_i_waliduje_sie()
+    {
+        var model = PrzykladowaFaktura(); // 1800 netto, 23%
+        model.Waluta = "EUR";
+        model.Kurs = 4.30m;
+
+        var fa = Fa3Mapper.ToFa3(model);
+        var xml = Fa3Serializer.ToXml(fa);
+        Assert.True(Fa3Validator.Validate(xml).IsValid);
+
+        var odczyt = Fa3Serializer.FromXml(xml);
+        Assert.Equal(1800m, odczyt.Fa.P131);                 // netto w EUR
+        Assert.Equal(1780.20m, odczyt.Fa.P141);              // VAT w PLN: round(1800*4.30,2)*0.23
+        Assert.Contains("<KodWaluty>EUR</KodWaluty>", xml);
+    }
 }

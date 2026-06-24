@@ -33,6 +33,7 @@ public sealed class SettingsViewModel : ViewModelBase
         UstawAktywnaCommand = new RelayCommand(UstawAktywna, () => _id > 0);
         TestujPolaczenieCommand = new RelayCommand(TestujPolaczenie, () => !_zajety);
         PobierzZGusCommand = new RelayCommand(PobierzZGus, () => !_zajety);
+        PobierzKursyCommand = new RelayCommand(PobierzKursy, () => !_zajety);
         Wczytaj();
     }
 
@@ -85,6 +86,7 @@ public sealed class SettingsViewModel : ViewModelBase
     public RelayCommand UstawAktywnaCommand { get; }
     public RelayCommand TestujPolaczenieCommand { get; }
     public RelayCommand PobierzZGusCommand { get; }
+    public RelayCommand PobierzKursyCommand { get; }
 
     public void Wczytaj()
     {
@@ -174,6 +176,27 @@ public sealed class SettingsViewModel : ViewModelBase
         AppServices.UstawAktywnaFirme(_id);
         OnPropertyChanged(nameof(AktywnaFirmaNazwa));
         MessageBox.Show($"Aktywna firma: {Nazwa}.", "FreeKSeF", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private async void PobierzKursy()
+    {
+        _zajety = true;
+        CommandManager.InvalidateRequerySuggested();
+        try
+        {
+            var dodane = await KursyService.ImportujAsync(DateTime.Today.AddDays(-90), DateTime.Today);
+            MessageBox.Show($"Pobrano kursy walut z NBP (tabela A, ~90 dni). Nowych notowan: {dodane}.",
+                "Kursy walut", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Kursy walut", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _zajety = false;
+            CommandManager.InvalidateRequerySuggested();
+        }
     }
 
     private async void PobierzZGus()

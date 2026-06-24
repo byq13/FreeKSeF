@@ -18,6 +18,15 @@ public sealed class FakturaModel
     /// <summary>Kod waluty ISO (domyslnie PLN).</summary>
     public string Waluta { get; set; } = "PLN";
 
+    /// <summary>
+    /// Kurs waluty do PLN (sredni NBP z dnia roboczego przed wystawieniem). Dla PLN = 1.
+    /// Uzywany do przeliczenia kwoty VAT na PLN na fakturach w walucie obcej (dzial VI ustawy).
+    /// </summary>
+    public decimal Kurs { get; set; } = 1m;
+
+    /// <summary>True, gdy faktura jest w walucie obcej (innej niz PLN).</summary>
+    public bool WalutaObca => !string.Equals(Waluta, "PLN", StringComparison.OrdinalIgnoreCase);
+
     public Strona Sprzedawca { get; set; } = new();
     public Strona Nabywca { get; set; } = new();
 

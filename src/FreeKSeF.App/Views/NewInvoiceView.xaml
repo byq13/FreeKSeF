@@ -25,6 +25,11 @@
                     <DatePicker SelectedDate="{Binding DataWystawienia}" />
                     <Label Content="Data sprzedazy" />
                     <DatePicker SelectedDate="{Binding DataSprzedazy}" />
+                    <Label Content="Waluta" />
+                    <ComboBox ItemsSource="{Binding Waluty}" SelectedItem="{Binding Waluta}" />
+                    <Label Content="Kurs do PLN (kurs z dnia poprzedniego, edytowalny)" />
+                    <TextBox Text="{Binding Kurs, UpdateSourceTrigger=PropertyChanged, StringFormat=N4}"
+                             IsEnabled="{Binding KursWidoczny}" />
                 </StackPanel>
 
                 <!-- Nabywca -->
@@ -36,7 +41,9 @@
                               DisplayMemberPath="Nazwa" />
                     <Label Content="Nazwa" />
                     <TextBox Text="{Binding NabywcaNazwa, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label Content="NIP (puste = osoba prywatna)" />
+                    <Label Content="Kraj" />
+                    <ComboBox ItemsSource="{Binding Kraje}" SelectedItem="{Binding NabywcaKraj}" IsEditable="True" />
+                    <Label Content="NIP / VAT UE / ID (puste = osoba prywatna)" />
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
