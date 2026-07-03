@@ -60,6 +60,18 @@ Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 ✅ Realna integracja KSeF na oficjalnym `KSeF.Client` 2.6.0
 ✅ Interfejs WPF: listy sprzedaży/zakupu, podgląd/eksport PDF, eksport XML, bufor + wysyłka z potwierdzeniem
 
+## Pobieranie (gotowy exe z CI)
+
+CI (GitHub Actions → Artifacts) buduje **dwa warianty** `FreeKSeF.exe`:
+
+| Artefakt | Rozmiar | Wymaga |
+|---|---|---|
+| `FreeKSeF-win-x64` (pełny) | duży (kilkadziesiąt MB, .NET w środku) | nic — działa od ręki |
+| `FreeKSeF-win-x64-lekki` | mały (kilka MB) | zainstalowany **[.NET Desktop Runtime 10 x64](https://dotnet.microsoft.com/download/dotnet/10.0)** |
+
+Oba warianty działają identycznie (ta sama baza `freeksef.db` obok exe). Jeśli lekki exe
+nie startuje — zainstaluj .NET Desktop Runtime 10 (x64) z linku powyżej albo użyj pełnego.
+
 ## Wymagania
 
 - .NET SDK 10 (desktop) — do budowy WPF na Windows (lub gotowy `FreeKSeF.exe` z CI).

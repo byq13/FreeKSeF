@@ -35,12 +35,25 @@ jobs:
       - name: Test
         run: dotnet test FreeKSeF.sln -c Release --no-build --verbosity normal
 
-      - name: Publish (samodzielny .exe Windows)
-        run: dotnet publish src/FreeKSeF.App/FreeKSeF.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+      # Wariant "pelny": exe z wbudowanym .NET - dziala od reki na kazdym Windows,
+      # ale duzy. Kompresja single-file zmniejsza go mniej wiecej o polowe.
+      - name: Publish (pelny - z .NET w srodku)
+        run: dotnet publish src/FreeKSeF.App/FreeKSeF.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish-full
 
-      - name: Upload artefaktu (FreeKSeF.exe)
+      # Wariant "lekki": maly exe, wymaga zainstalowanego .NET Desktop Runtime 10 (x64).
+      - name: Publish (lekki - wymaga .NET Desktop Runtime 10)
+        run: dotnet publish src/FreeKSeF.App/FreeKSeF.App.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish-light
+
+      - name: Upload artefaktu (pelny)
         uses: actions/upload-artifact@v4
         with:
           name: FreeKSeF-win-x64
-          path: publish/FreeKSeF.exe
+          path: publish-full/FreeKSeF.exe
+          if-no-files-found: error
+
+      - name: Upload artefaktu (lekki)
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreeKSeF-win-x64-lekki
+          path: publish-light/FreeKSeF.exe
           if-no-files-found: error
