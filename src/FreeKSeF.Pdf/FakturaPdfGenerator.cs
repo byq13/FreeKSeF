@@ -78,6 +78,8 @@ public static class FakturaPdfGenerator
         tytul.Format.SpaceAfter = Unit.FromMillimeter(2);
 
         var info = sec.AddParagraph();
+        if (!string.IsNullOrWhiteSpace(fa.Fa.P1M))
+            info.AddText($"Miejsce wystawienia: {fa.Fa.P1M}    ");
         info.AddText($"Data wystawienia: {fa.Fa.P1:yyyy-MM-dd}");
         if (fa.Fa.P6Specified)
             info.AddText($"    Data sprzedazy: {fa.Fa.P6:yyyy-MM-dd}");

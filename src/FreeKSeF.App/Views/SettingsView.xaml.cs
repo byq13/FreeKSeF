@@ -15,4 +15,11 @@ public partial class SettingsView : UserControl
                 vm.NowyToken = TokenBox.Password;
         };
     }
+
+    /// <summary>Otwiera okno podgladu/edycji tabeli kursow walut.</summary>
+    private void KursyWalut_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var okno = new KursyWindow { Owner = System.Windows.Application.Current.MainWindow };
+        okno.ShowDialog();
+    }
 }

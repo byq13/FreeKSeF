@@ -1,0 +1,45 @@
+<Window x:Class="FreeKSeF.App.Views.KursyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        d:DataContext="{d:DesignInstance vm:KursyViewModel}"
+        mc:Ignorable="d"
+        Title="Kursy walut (NBP)" Height="620" Width="640"
+        WindowStartupLocation="CenterOwner">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Background="#F9FAFB" Padding="10" CornerRadius="6" Margin="0,0,0,8">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="Waluta:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="110" ItemsSource="{Binding FiltrWaluty}" SelectedItem="{Binding FiltrWaluta}"
+                              Margin="0,0,16,0" />
+                    <Button Content="Pobierz z NBP (90 dni)" Command="{Binding PobierzCommand}" />
+                    <Button Content="Usuń wpis" Command="{Binding UsunCommand}" />
+                    <Button Content="Zapisz zmiany" Command="{Binding ZapiszCommand}"
+                            Background="#1F2937" Foreground="White" />
+                </WrapPanel>
+                <WrapPanel Margin="0,8,0,0">
+                    <TextBlock Text="Własny wpis:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="80" ItemsSource="{Binding Waluty}" SelectedItem="{Binding NowyKod}" Margin="0,0,6,0" />
+                    <DatePicker SelectedDate="{Binding NowaData}" Margin="0,0,6,0" />
+                    <TextBox Width="90" Text="{Binding NowyKurs, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalAlignment="Center" ToolTip="Kurs do PLN, np. 4,3215" />
+                    <Button Content="Dodaj" Command="{Binding DodajCommand}" />
+                </WrapPanel>
+                <TextBlock Text="{Binding Status}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0" />
+            </StackPanel>
+        </Border>
+
+        <DataGrid ItemsSource="{Binding Wiersze}" SelectedItem="{Binding Wybrany}"
+                  AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Data" Binding="{Binding Data, StringFormat=yyyy-MM-dd}" IsReadOnly="True" Width="110" />
+                <DataGridTextColumn Header="Waluta" Binding="{Binding Kod}" IsReadOnly="True" Width="80" />
+                <DataGridTextColumn Header="Kurs do PLN (edytowalny)" Binding="{Binding Kurs, StringFormat=N4}" Width="170" />
+                <DataGridTextColumn Header="Źródło" Binding="{Binding Tabela}" IsReadOnly="True" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Window>

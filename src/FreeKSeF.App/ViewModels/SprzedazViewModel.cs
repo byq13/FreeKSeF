@@ -1,9 +1,12 @@
+using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
+using FreeKSeF.Core.Fa3;
 using FreeKSeF.Data;
 using FreeKSeF.Data.Entities;
+using Microsoft.Win32;
 
 namespace FreeKSeF.App.ViewModels;
 
@@ -23,6 +26,7 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
     {
         WyslijCommand = new RelayCommand(Wyslij, () => !_zajety && Wybrany is not null);
         PobierzSprzedazCommand = new RelayCommand(PobierzSprzedaz, () => !_zajety);
+        WczytajXmlCommand = new RelayCommand(WczytajXml, () => !_zajety);
         Odswiez();
     }
 
@@ -30,6 +34,81 @@ public sealed class SprzedazViewModel : FakturaListaViewModelBase
 
     public RelayCommand WyslijCommand { get; }
     public RelayCommand PobierzSprzedazCommand { get; }
+    public RelayCommand WczytajXmlCommand { get; }
+
+    /// <summary>
+    /// Wczytuje fakture (lub kilka) z plikow XML FA(3) - np. wystawiona w innym programie -
+    /// do bufora jako robocza. Taka fakture mozna obejrzec, poprawic status i wyslac do KSeF.
+    /// </summary>
+    private void WczytajXml()
+    {
+        if (AppServices.AktywnaFirmaId == 0)
+        {
+            MessageBox.Show("Najpierw dodaj i wybierz firme w zakladce Ustawienia.", "Brak firmy",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Title = "Wczytaj fakture z pliku XML (FA(3))",
+            Filter = "Faktura XML (*.xml)|*.xml|Wszystkie pliki (*.*)|*.*",
+            Multiselect = true,
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        var firmaId = AppServices.AktywnaFirmaId;
+        int wczytane = 0;
+        var bledy = new List<string>();
+
+        foreach (var plik in dialog.FileNames)
+        {
+            var nazwaPliku = Path.GetFileName(plik);
+            try
+            {
+                var xml = File.ReadAllText(plik);
+
+                // Walidacja XSD - ostrzegamy, ale pozwalamy wczytac (inny program mogl miec drobne odstepstwa).
+                var wynik = Fa3Validator.Validate(xml);
+                if (!wynik.IsValid)
+                {
+                    var odp = MessageBox.Show(
+                        $"Plik {nazwaPliku} nie przechodzi walidacji FA(3):\n\n" +
+                        string.Join("\n", wynik.Errors.Take(5)) +
+                        "\n\nWczytac mimo to? (KSeF moze odrzucic taka fakture)",
+                        "Walidacja FA(3)", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                    if (odp != MessageBoxResult.Yes) continue;
+                }
+
+                var inv = FakturaMapping.ZImportu(xml, firmaId, KierunekFaktury.Sprzedaz);
+                inv.Status = StatusFaktury.Robocza; // do bufora - wysylka dopiero na wyrazne polecenie
+
+                using var db = AppServices.Db();
+                if (db.Invoices.Any(i => i.CompanyId == firmaId && i.Kierunek == KierunekFaktury.Sprzedaz && i.Numer == inv.Numer))
+                {
+                    var odp = MessageBox.Show(
+                        $"Faktura o numerze {inv.Numer} juz istnieje na liscie sprzedazy.\nWczytac ja mimo to (jako druga)?",
+                        "Duplikat numeru", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+                    if (odp != MessageBoxResult.Yes) continue;
+                }
+
+                db.Invoices.Add(inv);
+                db.SaveChanges();
+                DodajNaGore(inv);
+                wczytane++;
+            }
+            catch (Exception ex)
+            {
+                bledy.Add($"{nazwaPliku}: {ex.Message}");
+            }
+        }
+
+        var tekst = $"Wczytano do bufora: {wczytane} z {dialog.FileNames.Length}.";
+        if (bledy.Count > 0)
+            tekst += "\n\nBledy:\n" + string.Join("\n", bledy);
+        MessageBox.Show(tekst, "Wczytywanie z XML", MessageBoxButton.OK,
+            bledy.Count > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
+    }
 
     private async void Wyslij()
     {

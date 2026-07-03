@@ -111,6 +111,9 @@ public static class Fa3Mapper
             P15 = m.SumaBrutto,
         };
 
+        if (!string.IsNullOrWhiteSpace(m.MiejsceWystawienia))
+            fa.P1M = m.MiejsceWystawienia.Trim();
+
         if (m.DataSprzedazy is { } ds)
         {
             fa.P6 = ds;

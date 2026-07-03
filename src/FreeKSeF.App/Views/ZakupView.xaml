@@ -32,7 +32,7 @@
 
         <DataGrid x:Name="Grid" Tag="grid.kolumny.zakup"
                   ItemsSource="{Binding Wiersze}" SelectedItem="{Binding Wybrany}" IsReadOnly="True"
-                  PreviewMouseRightButtonDown="Grid_RightClick"
+                  PreviewMouseRightButtonDown="Grid_RightClick" MouseDoubleClick="Grid_DoubleClick"
                   Loaded="Grid_Loaded" Unloaded="Grid_Unloaded" ColumnReordered="Grid_ColumnReordered">
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">

@@ -15,6 +15,9 @@ public sealed class FakturaModel
     /// <summary>Data dokonania/zakonczenia dostawy lub uslugi (P_6). Null = pomijane.</summary>
     public DateTime? DataSprzedazy { get; set; }
 
+    /// <summary>Miejsce wystawienia faktury (P_1M). Puste = pomijane (pole opcjonalne).</summary>
+    public string? MiejsceWystawienia { get; set; }
+
     /// <summary>Kod waluty ISO (domyslnie PLN).</summary>
     public string Waluta { get; set; } = "PLN";
 

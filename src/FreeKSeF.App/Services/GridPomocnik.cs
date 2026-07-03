@@ -23,6 +23,10 @@ public static class GridPomocnik
         }
     }
 
+    /// <summary>True, gdy zrodlo zdarzenia lezy w wierszu danych (a nie np. w naglowku kolumny).</summary>
+    public static bool KliknietoWiersz(DependencyObject? zrodlo)
+        => ZnajdzRodzica<DataGridRow>(zrodlo) is not null;
+
     /// <summary>Przywraca zapamietany uklad kolumn (po naglowku). Bledny/stary wpis jest ignorowany.</summary>
     public static void PrzywrocKolumny(DataGrid grid, string klucz)
     {

@@ -14,6 +14,14 @@ public partial class ZakupView : UserControl
     private void Grid_RightClick(object sender, MouseButtonEventArgs e)
         => GridPomocnik.ZaznaczWierszPodKursorem((DataGrid)sender, e.OriginalSource as System.Windows.DependencyObject);
 
+    /// <summary>Dwuklik na wierszu = podglad faktury (PDF).</summary>
+    private void Grid_DoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (!GridPomocnik.KliknietoWiersz(e.OriginalSource as System.Windows.DependencyObject)) return;
+        if (DataContext is ViewModels.FakturaListaViewModelBase vm && vm.PodgladCommand.CanExecute(null))
+            vm.PodgladCommand.Execute(null);
+    }
+
     private void Grid_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
         var g = (DataGrid)sender;

@@ -78,7 +78,7 @@
                     <Button Content="Usuń" Command="{Binding UsunCommand}" />
                     <Button Content="Ustaw jako aktywną" Command="{Binding UstawAktywnaCommand}" />
                     <Button Content="Testuj połączenie" Command="{Binding TestujPolaczenieCommand}" />
-                    <Button Content="Pobierz kursy z NBP" Command="{Binding PobierzKursyCommand}" />
+                    <Button Content="Kursy walut (NBP)…" Click="KursyWalut_Click" />
                 </WrapPanel>
             </StackPanel>
         </ScrollViewer>

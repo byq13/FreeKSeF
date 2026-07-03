@@ -21,6 +21,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     private string _numer = string.Empty;
     private DateTime _dataWystawienia = DateTime.Today;
     private DateTime? _dataSprzedazy = DateTime.Today;
+    private string _miejsceWystawienia = string.Empty;
     private string _nabywcaNip = string.Empty;
     private string _nabywcaNazwa = string.Empty;
     private string _nabywcaAdresL1 = string.Empty;
@@ -60,6 +61,9 @@ public sealed class NewInvoiceViewModel : ViewModelBase
     public string Numer { get => _numer; set => SetField(ref _numer, value); }
     public DateTime DataWystawienia { get => _dataWystawienia; set { if (SetField(ref _dataWystawienia, value)) PrzeliczKurs(); } }
     public DateTime? DataSprzedazy { get => _dataSprzedazy; set => SetField(ref _dataSprzedazy, value); }
+
+    /// <summary>Miejsce wystawienia (P_1M) - zapamietywane per firma, prefill z miejscowosci firmy.</summary>
+    public string MiejsceWystawienia { get => _miejsceWystawienia; set => SetField(ref _miejsceWystawienia, value); }
     public string NabywcaNip { get => _nabywcaNip; set => SetField(ref _nabywcaNip, value); }
     public string NabywcaNazwa { get => _nabywcaNazwa; set => SetField(ref _nabywcaNazwa, value); }
     public string NabywcaAdresL1 { get => _nabywcaAdresL1; set => SetField(ref _nabywcaAdresL1, value); }
@@ -134,6 +138,10 @@ public sealed class NewInvoiceViewModel : ViewModelBase
 
         if (string.IsNullOrWhiteSpace(Numer) && firma is not null)
             Numer = ProponowanyNumer(db, firma);
+
+        if (string.IsNullOrWhiteSpace(MiejsceWystawienia) && firma is not null)
+            MiejsceWystawienia = Ustawienia.Pobierz($"miejsceWystawienia.{firma.Id}")
+                                 ?? MiastoZAdresu(firma.AdresL2);
 
         if (Pozycje.Count == 0)
             DodajPozycje();
@@ -223,6 +231,7 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             Numer = Numer.Trim(),
             DataWystawienia = DataWystawienia,
             DataSprzedazy = DataSprzedazy,
+            MiejsceWystawienia = string.IsNullOrWhiteSpace(MiejsceWystawienia) ? null : MiejsceWystawienia.Trim(),
             Waluta = Waluta,
             Kurs = KursWidoczny ? (Kurs > 0 ? Kurs : 1m) : 1m,
             Sprzedawca = new Strona
@@ -284,6 +293,9 @@ public sealed class NewInvoiceViewModel : ViewModelBase
 
         DopiszKontrahenta(db, firmaId, model.Nabywca);
         db.SaveChanges();
+
+        // Zapamietaj miejsce wystawienia na kolejne faktury tej firmy.
+        Ustawienia.Zapisz($"miejsceWystawienia.{firmaId}", MiejsceWystawienia.Trim());
 
         if (!string.IsNullOrEmpty(komunikat))
             MessageBox.Show(komunikat, "FreeKSeF", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -407,6 +419,16 @@ public sealed class NewInvoiceViewModel : ViewModelBase
             AdresL1 = nabywca.Adres.AdresL1,
             AdresL2 = nabywca.Adres.AdresL2,
         });
+    }
+
+    /// <summary>Wyciaga miejscowosc z linii adresu "00-001 Warszawa" (odcina kod pocztowy).</summary>
+    private static string MiastoZAdresu(string? adresL2)
+    {
+        if (string.IsNullOrWhiteSpace(adresL2)) return string.Empty;
+        var czesci = adresL2.Trim().Split(' ', 2);
+        return czesci.Length == 2 && czesci[0].Length <= 6 && czesci[0].Any(char.IsDigit)
+            ? czesci[1].Trim()
+            : adresL2.Trim();
     }
 
     private static string BezpiecznaNazwaPliku(string numer)

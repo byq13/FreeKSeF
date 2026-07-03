@@ -58,6 +58,19 @@ public class Fa3GenerationTests
     }
 
     [Fact]
+    public void Miejsce_wystawienia_trafia_do_P_1M_i_waliduje_sie()
+    {
+        var model = PrzykladowaFaktura();
+        model.MiejsceWystawienia = "Warszawa";
+
+        var xml = Fa3Serializer.ToXml(Fa3Mapper.ToFa3(model));
+        var wynik = Fa3Validator.Validate(xml);
+
+        Assert.True(wynik.IsValid, "Walidacja XSD nie powiodla sie:\n" + string.Join("\n", wynik.Errors));
+        Assert.Contains("<P_1M>Warszawa</P_1M>", xml);
+    }
+
+    [Fact]
     public void Sumy_VAT_sa_poprawnie_wyliczone()
     {
         var model = PrzykladowaFaktura();

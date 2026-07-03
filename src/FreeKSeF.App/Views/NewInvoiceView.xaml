@@ -21,6 +21,8 @@
                     <TextBlock Text="Faktura" FontSize="16" FontWeight="Bold" Margin="0,0,0,8" />
                     <Label Content="Numer" />
                     <TextBox Text="{Binding Numer, UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Content="Miejsce wystawienia" />
+                    <TextBox Text="{Binding MiejsceWystawienia, UpdateSourceTrigger=PropertyChanged}" />
                     <Label Content="Data wystawienia" />
                     <DatePicker SelectedDate="{Binding DataWystawienia}" />
                     <Label Content="Data sprzedazy" />
