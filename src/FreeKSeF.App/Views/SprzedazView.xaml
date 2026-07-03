@@ -22,6 +22,8 @@
                     <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
                     <Button Content="Wczytaj z XML…" Command="{Binding WczytajXmlCommand}"
                             ToolTip="Wczytaj fakturę FA(3) z pliku XML (np. z innego programu) do bufora" />
+                    <Button Content="Kolumny…" Click="Kolumny_Click"
+                            ToolTip="Wybierz, które kolumny listy mają być widoczne" />
                 </WrapPanel>
                 <WrapPanel Margin="0,8,0,0">
                     <TextBlock Text="Pobierz sprzedaż z KSeF — miesiąc:" VerticalAlignment="Center" Margin="0,0,6,0" />
@@ -65,14 +67,19 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
+                <DataGridTextColumn Header="Status" Binding="{Binding Faktura.Status, Converter={StaticResource EnumLabel}}" Width="110" Visibility="Collapsed" />
                 <DataGridTextColumn Header="Numer" Binding="{Binding Faktura.Numer}" Width="*" />
                 <DataGridTextColumn Header="Data" Binding="{Binding Faktura.DataWystawienia, StringFormat=d}" Width="95" />
+                <DataGridTextColumn Header="Data sprzedaży" Binding="{Binding Faktura.DataSprzedazy, StringFormat=d}" Width="105" Visibility="Collapsed" />
                 <DataGridTextColumn Header="Nabywca" Binding="{Binding Faktura.KontrahentNazwa}" Width="*" />
                 <DataGridTextColumn Header="NIP" Binding="{Binding Faktura.KontrahentNip}" Width="110" />
                 <DataGridTextColumn Header="Netto" Binding="{Binding Faktura.SumaNetto, StringFormat=N2}" Width="90" />
                 <DataGridTextColumn Header="VAT" Binding="{Binding Faktura.SumaVat, StringFormat=N2}" Width="80" />
                 <DataGridTextColumn Header="Brutto" Binding="{Binding Faktura.SumaBrutto, StringFormat=N2}" Width="95" />
+                <DataGridTextColumn Header="Waluta" Binding="{Binding Faktura.Waluta}" Width="60" Visibility="Collapsed" />
                 <DataGridTextColumn Header="Numer KSeF" Binding="{Binding Faktura.NumerKsef}" Width="170" />
+                <DataGridTextColumn Header="Wysłano do KSeF" Binding="{Binding Wyslano, StringFormat=g}" Width="130" Visibility="Collapsed" />
+                <DataGridTextColumn Header="Utworzono" Binding="{Binding Utworzono, StringFormat=g}" Width="130" Visibility="Collapsed" />
             </DataGrid.Columns>
         </DataGrid>
     </DockPanel>

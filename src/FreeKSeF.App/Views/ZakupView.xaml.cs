@@ -39,4 +39,8 @@ public partial class ZakupView : UserControl
         var g = (DataGrid)sender!;
         GridPomocnik.ZapiszKolumny(g, (string)g.Tag);
     }
+
+    /// <summary>Menu wyboru widocznych kolumn listy.</summary>
+    private void Kolumny_Click(object sender, System.Windows.RoutedEventArgs e)
+        => GridPomocnik.PokazWyborKolumn(Grid, (string)Grid.Tag, (System.Windows.UIElement)sender);
 }
