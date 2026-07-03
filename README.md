@@ -22,12 +22,19 @@ faktur.
 - 🏢 **Obsługa wielu firm** — każda z własnymi fakturami, kontrahentami, tokenem i środowiskiem;
   przełącznik aktywnej firmy u góry okna.
 - 🧳 **Przenośność** — baza `freeksef.db` leży **obok pliku exe** (pendrive), bez plików
-  konfiguracyjnych; wszystkie ustawienia trzymane w bazie.
+  konfiguracyjnych; wszystkie ustawienia trzymane w bazie. **Token KSeF jest szyfrowany
+  i zapisany w bazie** (przenosi się razem z nią); można go dodatkowo **zabezpieczyć hasłem** —
+  wtedy hasło jest wymagane przy operacjach z KSeF, a bez hasła tokena nie da się odzyskać.
 - 💱 **Faktury w walucie obcej** (EUR, USD…) z kursem **NBP** (własna tabela kursów, kurs z dnia
   poprzedniego, edytowalny); VAT przeliczany na PLN zgodnie z FA(3).
 - 🌍 **Kontrahenci z UE i spoza UE** (kod kraju + NrVatUE/NrID), adres zagraniczny.
 - 📦 **Baza produktów/usług** — szybkie wstawianie powtarzalnych pozycji.
 - 🔢 **Konfigurowalna numeracja** — własny szablon numeru ({NR}/{MM}/{RRRR}) + reset miesięczny/roczny.
+- 📂 **Wczytywanie faktur z plików XML FA(3)** (np. z innego programu) do bufora — i darmowa
+  wysyłka do KSeF przez FreeKSeF.
+- 🗓️ **Miejsce wystawienia** na fakturze (zapamiętywane per firma) + dwuklik na liście = podgląd.
+- 📊 **Konfigurowalne kolumny list** (widoczność, kolejność, szerokość — zapamiętywane) oraz
+  **podgląd/edycja tabeli kursów walut** (własne wpisy, poprawki kursów).
 
 Planowane dalej: magazyn, pobieranie danych po NIP (GUS), korekty,
 logowanie podpisem kwalifikowanym (XAdES).

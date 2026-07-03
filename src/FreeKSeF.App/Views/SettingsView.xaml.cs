@@ -14,6 +14,11 @@ public partial class SettingsView : UserControl
             if (DataContext is SettingsViewModel vm)
                 vm.NowyToken = TokenBox.Password;
         };
+        HasloBox.PasswordChanged += (_, _) =>
+        {
+            if (DataContext is SettingsViewModel vm)
+                vm.NoweHaslo = HasloBox.Password;
+        };
     }
 
     /// <summary>Otwiera okno podgladu/edycji tabeli kursow walut.</summary>

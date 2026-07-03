@@ -64,6 +64,10 @@
 
                 <Label Content="Token KSeF (wpisz, aby ustawić/zmienić)" />
                 <PasswordBox x:Name="TokenBox" Padding="4,3" Margin="0,2,0,4" />
+                <Label Content="Hasło do tokena (opcjonalne, razem z nowym tokenem)" />
+                <PasswordBox x:Name="HasloBox" Padding="4,3" Margin="0,2,0,4" />
+                <TextBlock Foreground="#6B7280" FontSize="12" Margin="0,0,0,4" TextWrapping="Wrap"
+                           Text="Token jest szyfrowany i zapisywany w bazie (przenośny z plikiem bazy). Jeśli ustawisz hasło, będzie ono wymagane przy każdej operacji z KSeF — bez hasła tokena nie da się odzyskać." />
                 <TextBlock Text="{Binding StatusTokenu}" Foreground="#6B7280" FontSize="12" Margin="0,0,0,8" />
 
                 <TextBlock Text="Numeracja faktur" FontSize="16" FontWeight="Bold" Margin="0,16,0,8" />

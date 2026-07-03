@@ -25,6 +25,7 @@ public sealed class SettingsViewModel : ViewModelBase
     private string _numerSzablon = "FV {NR}/{MM}/{RRRR}";
     private bool _numerResetRoczny;
     private bool _tokenUstawiony;
+    private bool _tokenChroniony;
     private bool _zajety;
 
     public SettingsViewModel()
@@ -57,7 +58,9 @@ public sealed class SettingsViewModel : ViewModelBase
             NumerSzablon = string.IsNullOrWhiteSpace(value.NumerSzablon) ? "FV {NR}/{MM}/{RRRR}" : value.NumerSzablon;
             NumerResetRoczny = value.NumerResetRoczny;
             TokenUstawiony = !string.IsNullOrEmpty(value.KsefTokenProtected);
+            TokenChroniony = SecretProtector.ChronionyHaslem(value.KsefTokenProtected);
             NowyToken = string.Empty;
+            NoweHaslo = string.Empty;
         }
     }
 
@@ -71,10 +74,17 @@ public sealed class SettingsViewModel : ViewModelBase
     public bool NumerResetRoczny { get => _numerResetRoczny; set => SetField(ref _numerResetRoczny, value); }
 
     public bool TokenUstawiony { get => _tokenUstawiony; set { if (SetField(ref _tokenUstawiony, value)) OnPropertyChanged(nameof(StatusTokenu)); } }
-    public string StatusTokenu => TokenUstawiony ? "Token zapisany." : "Brak tokenu.";
+    public bool TokenChroniony { get => _tokenChroniony; set { if (SetField(ref _tokenChroniony, value)) OnPropertyChanged(nameof(StatusTokenu)); } }
+
+    public string StatusTokenu => !TokenUstawiony ? "Brak tokenu."
+        : TokenChroniony ? "Token zapisany (chroniony hasłem)."
+        : "Token zapisany.";
 
     /// <summary>Nowy token wpisany w UI (PasswordBox). Pusty = bez zmiany.</summary>
     public string NowyToken { private get; set; } = string.Empty;
+
+    /// <summary>Opcjonalne haslo zabezpieczajace token (dziala tylko przy wpisaniu nowego tokena).</summary>
+    public string NoweHaslo { private get; set; } = string.Empty;
 
     public string AktywnaFirmaNazwa
     {
@@ -137,9 +147,13 @@ public sealed class SettingsViewModel : ViewModelBase
             c.NumerResetRoczny = NumerResetRoczny;
             if (!string.IsNullOrWhiteSpace(NowyToken))
             {
-                c.KsefTokenProtected = SecretProtector.Protect(NowyToken.Trim());
+                var haslo = string.IsNullOrEmpty(NoweHaslo) ? null : NoweHaslo;
+                c.KsefTokenProtected = SecretProtector.Protect(NowyToken.Trim(), haslo);
                 TokenUstawiony = true;
+                TokenChroniony = haslo is not null;
                 NowyToken = string.Empty;
+                NoweHaslo = string.Empty;
+                if (c.Id != 0) AppServices.WyczyscTokenCache(c.Id);
             }
 
             if (c.Id == 0) db.Companies.Add(c);
@@ -234,7 +248,7 @@ public sealed class SettingsViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(token) && _id > 0)
         {
             using var db = AppServices.Db();
-            token = SecretProtector.Unprotect(db.Companies.Find(_id)?.KsefTokenProtected);
+            token = db.Companies.Find(_id) is { } firma ? AppServices.PobierzToken(firma) : null;
         }
         if (string.IsNullOrWhiteSpace(token))
         {
