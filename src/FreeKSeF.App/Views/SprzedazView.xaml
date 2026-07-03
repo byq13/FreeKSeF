@@ -19,6 +19,8 @@
                     <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
                             Background="#1F2937" Foreground="White" />
                     <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <Button Content="Edytor zaawansowany" Command="{Binding EdytorCommand}"
+                            ToolTip="Wszystkie pola FA(3) — robocze można edytować, wysłane tylko obejrzeć" />
                     <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
                     <Button Content="Wczytaj z XML…" Command="{Binding WczytajXmlCommand}"
                             ToolTip="Wczytaj fakturę FA(3) z pliku XML (np. z innego programu) do bufora" />
@@ -53,6 +55,7 @@
                 <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="Wyślij do KSeF" Command="{Binding WyslijCommand}" />
                     <MenuItem Header="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <MenuItem Header="Edytor zaawansowany" Command="{Binding EdytorCommand}" />
                     <MenuItem Header="Zaznacz / odznacz" Command="{Binding ZaznaczCommand}" />
                     <Separator />
                     <MenuItem Header="Usuń" Command="{Binding UsunCommand}" />

@@ -35,6 +35,9 @@ faktur.
 - 🗓️ **Miejsce wystawienia** na fakturze (zapamiętywane per firma) + dwuklik na liście = podgląd.
 - 📊 **Konfigurowalne kolumny list** (widoczność, kolejność, szerokość — zapamiętywane) oraz
   **podgląd/edycja tabeli kursów walut** (własne wpisy, poprawki kursów).
+- 🛠️ **Edytor zaawansowany** — tabela **wszystkich pól FA(3)** (edytory dopasowane do typu:
+  tekst / lista / ptaszek): faktury **robocze można edytować** i zapisać (z walidacją XSD),
+  wysłane/otrzymane obejrzeć; wbudowany podgląd surowego XML.
 
 Planowane dalej: magazyn, pobieranie danych po NIP (GUS), korekty,
 logowanie podpisem kwalifikowanym (XAdES).

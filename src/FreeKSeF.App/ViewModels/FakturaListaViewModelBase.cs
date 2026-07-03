@@ -42,6 +42,7 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         _okres = WczytajOkres();
 
         PodgladCommand = new RelayCommand(Podglad, () => Wybrany is not null);
+        EdytorCommand = new RelayCommand(Edytor, () => Wybrany is not null);
         ZapiszXmlCommand = new RelayCommand(ZapiszXml, () => Wybrany is not null);
         ZaznaczCommand = new RelayCommand(Zaznacz, () => Wybrany is not null);
         UsunCommand = new RelayCommand(Usun, () => Wybrany is not null);
@@ -73,6 +74,7 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
     }
 
     public RelayCommand PodgladCommand { get; }
+    public RelayCommand EdytorCommand { get; }
     public RelayCommand ZapiszXmlCommand { get; }
     public RelayCommand ZaznaczCommand { get; }
     public RelayCommand UsunCommand { get; }
@@ -125,6 +127,25 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         if (Wybrany is null) return;
         var okno = new PodgladFakturyWindow(Wybrany.Faktura) { Owner = Application.Current.MainWindow };
         okno.ShowDialog();
+    }
+
+    /// <summary>Edytor zaawansowany (wszystkie pola FA(3)); dla nie-roboczych = viewer.</summary>
+    private void Edytor()
+    {
+        if (Wybrany is null) return;
+        EdytorFakturyWindow okno;
+        try
+        {
+            okno = new EdytorFakturyWindow(Wybrany.Faktura) { Owner = Application.Current.MainWindow };
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Nie udalo sie odczytac XML faktury:\n" + ex.Message,
+                "Edytor zaawansowany", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        okno.ShowDialog();
+        if (okno.Zapisano) Odswiez();
     }
 
     private void Zaznacz()

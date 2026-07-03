@@ -17,6 +17,8 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
                     <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <Button Content="Podgląd zaawansowany" Command="{Binding EdytorCommand}"
+                            ToolTip="Wszystkie pola FA(3) otrzymanej faktury (tylko odczyt)" />
                     <Button Content="Zapisz XML" Command="{Binding ZapiszXmlCommand}" />
                     <Button Content="Kolumny…" Click="Kolumny_Click"
                             ToolTip="Wybierz, które kolumny listy mają być widoczne" />
@@ -48,6 +50,7 @@
             <DataGrid.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="Podgląd / PDF" Command="{Binding PodgladCommand}" />
+                    <MenuItem Header="Podgląd zaawansowany" Command="{Binding EdytorCommand}" />
                     <MenuItem Header="Zaznacz / odznacz" Command="{Binding ZaznaczCommand}" />
                     <Separator />
                     <MenuItem Header="Usuń" Command="{Binding UsunCommand}" />

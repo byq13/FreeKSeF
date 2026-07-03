@@ -1,0 +1,81 @@
+<Window x:Class="FreeKSeF.App.Views.EdytorFakturyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:FreeKSeF.App.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        d:DataContext="{d:DesignInstance vm:EdytorFakturyViewModel}"
+        mc:Ignorable="d"
+        Title="{Binding Tytul}" Height="720" Width="760"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="#F3F4F6" Padding="8">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Zapisz" Command="{Binding ZapiszCommand}"
+                            Background="#1F2937" Foreground="White"
+                            Visibility="{Binding Edytowalne, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="Sprawdź (walidacja FA(3))" Command="{Binding WalidujCommand}"
+                            Visibility="{Binding Edytowalne, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+                <TextBlock Text="{Binding Status}" Foreground="#4B5563" FontSize="12" Margin="0,6,0,0"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <TabControl Margin="8">
+            <TabItem Header="Pola faktury">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Pola}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="300" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding Etykieta}"
+                                               Margin="{Binding Margines}" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Naglowek}" Value="True">
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                        <Setter Property="Foreground" Value="#1F2937" />
+                                                        <Setter Property="Margin" Value="{Binding Margines}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBox Grid.Column="1" Text="{Binding Wartosc, UpdateSourceTrigger=PropertyChanged}"
+                                             IsReadOnly="{Binding TylkoOdczyt}" Padding="3,2"
+                                             Visibility="{Binding JestTekst, Converter={StaticResource BoolToVis}}" />
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding Opcje}"
+                                              SelectedItem="{Binding Wartosc}"
+                                              IsEnabled="{Binding Edytowalne}"
+                                              Visibility="{Binding JestLista, Converter={StaticResource BoolToVis}}" />
+                                    <CheckBox Grid.Column="1" IsChecked="{Binding Zaznaczone}"
+                                              VerticalAlignment="Center" ToolTip="{Binding OpisCheck}"
+                                              IsEnabled="{Binding Edytowalne}"
+                                              Visibility="{Binding JestCheck, Converter={StaticResource BoolToVis}}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="XML (podgląd)">
+                <TextBox Text="{Binding Xml, Mode=OneWay}" IsReadOnly="True"
+                         FontFamily="Consolas" FontSize="12"
+                         VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap" AcceptsReturn="True" />
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
