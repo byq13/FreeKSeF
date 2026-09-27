@@ -4,6 +4,7 @@ using KSeF.Client.Api.Services;
 using KSeF.Client.Core.Interfaces;
 using KSeF.Client.Core.Interfaces.Clients;
 using KSeF.Client.Core.Interfaces.Services;
+using KSeF.Client.Core.Models;
 using KSeF.Client.Core.Models.Authorization;
 using KSeF.Client.Core.Models.Invoices;
 using KSeF.Client.Core.Models.Sessions;
@@ -89,42 +90,47 @@ public sealed class RealKsefGateway : IKsefGateway
             var sesja = await client.OpenOnlineSessionAsync(open, token, null, ct);
             var sesjaRef = sesja.ReferenceNumber;
 
-            // 3) Wyslanie zaszyfrowanej faktury.
-            var send = new SendInvoiceRequest
+            string fakturaRef;
+            try
             {
-                InvoiceHash = metaPlain.HashSHA,
-                InvoiceSize = metaPlain.FileSize,
-                EncryptedInvoiceHash = metaEnc.HashSHA,
-                EncryptedInvoiceSize = metaEnc.FileSize,
-                EncryptedInvoiceContent = Convert.ToBase64String(encrypted),
-            };
-            var wyslana = await client.SendOnlineSessionInvoiceAsync(send, sesjaRef, token, ct);
-            var fakturaRef = wyslana.ReferenceNumber;
+                // 3) Wyslanie zaszyfrowanej faktury.
+                var send = new SendInvoiceRequest
+                {
+                    InvoiceHash = metaPlain.HashSHA,
+                    InvoiceSize = metaPlain.FileSize,
+                    EncryptedInvoiceHash = metaEnc.HashSHA,
+                    EncryptedInvoiceSize = metaEnc.FileSize,
+                    EncryptedInvoiceContent = Convert.ToBase64String(encrypted),
+                };
+                var wyslana = await client.SendOnlineSessionInvoiceAsync(send, sesjaRef, token, ct);
+                fakturaRef = wyslana.ReferenceNumber;
+            }
+            finally
+            {
+                // 4) Zamkniecie sesji zawsze - takze po bledzie wysylki (uruchamia wygenerowanie UPO).
+                await ZamknijSesjeBezpiecznie(client, sesjaRef, token);
+            }
 
-            // 4) Zamkniecie sesji (uruchamia wygenerowanie UPO).
-            await client.CloseOnlineSessionAsync(sesjaRef, token, ct);
-
-            // 5) Oczekiwanie na nadanie numeru KSeF i pobranie UPO.
-            string? numerKsef = null;
-            string? upo = null;
+            // 5) Oczekiwanie na status faktury: 200 = numer KSeF nadany, >= 400 = odrzucona.
             for (var i = 0; i < 20; i++)
             {
                 var inv = await client.GetSessionInvoiceAsync(sesjaRef, fakturaRef, token, ct);
+                var status = inv.Status;
+
                 if (!string.IsNullOrEmpty(inv.KsefNumber))
                 {
-                    numerKsef = inv.KsefNumber;
-                    upo = await PobierzUpoBezpiecznie(client, sesjaRef, fakturaRef, token, ct);
-                    break;
+                    var upo = await PobierzUpoBezpiecznie(client, sesjaRef, fakturaRef, token, ct);
+                    return new WynikWysylki(true, fakturaRef, inv.KsefNumber, upo, null);
                 }
+
+                if (status is not null && status.Code >= 400)
+                    return new WynikWysylki(false, fakturaRef, null, null, OpisBledu(status));
+
                 await Task.Delay(1500, ct);
             }
 
-            return new WynikWysylki(
-                Sukces: numerKsef is not null,
-                NumerReferencyjny: fakturaRef,
-                NumerKsef: numerKsef,
-                UpoXml: upo,
-                Blad: numerKsef is null ? "KSeF nie nadal numeru w oczekiwanym czasie - sprawdz status pozniej." : null);
+            return new WynikWysylki(false, fakturaRef, null, null,
+                "KSeF nie nadal numeru w oczekiwanym czasie - sprawdz status pozniej.");
         }
         catch (Exception ex) when (ex is not KsefException)
         {
@@ -200,11 +206,12 @@ public sealed class RealKsefGateway : IKsefGateway
             },
         };
 
-        int offset = 0;
+        // pageOffset w API KSeF to NUMER strony (0, 1, 2...), a nie liczba pominietych rekordow.
+        int numerStrony = 0;
         const int rozmiarStrony = 100;
         while (true)
         {
-            var strona = await client.QueryInvoiceMetadataAsync(filtry, token, offset, rozmiarStrony, SortOrder.Desc, ct);
+            var strona = await client.QueryInvoiceMetadataAsync(filtry, token, numerStrony, rozmiarStrony, SortOrder.Desc, ct);
             var faktury = strona.Invoices;
             if (faktury is null || faktury.Count == 0) break;
 
@@ -214,7 +221,7 @@ public sealed class RealKsefGateway : IKsefGateway
 
             if (!strona.HasMore) break;
             await Task.Delay(OpoznienieLimituKsefMs, ct);
-            offset += rozmiarStrony;
+            numerStrony++;
         }
 
         return wynik;
@@ -224,6 +231,21 @@ public sealed class RealKsefGateway : IKsefGateway
     {
         try { return await client.GetSessionInvoiceUpoByReferenceNumberAsync(sesjaRef, fakturaRef, token, ct); }
         catch { return null; }
+    }
+
+    private static async Task ZamknijSesjeBezpiecznie(IKSeFClient client, string sesjaRef, string token)
+    {
+        // Bez tokena anulowania - sesje zamykamy nawet gdy uzytkownik przerwal operacje.
+        try { await client.CloseOnlineSessionAsync(sesjaRef, token, CancellationToken.None); }
+        catch { /* sesja i tak wygasnie po stronie KSeF */ }
+    }
+
+    private static string OpisBledu(InvoiceStatusInfo status)
+    {
+        var opis = $"KSeF odrzucil fakture (kod {status.Code}): {status.Description}";
+        if (status.Details is { Count: > 0 })
+            opis += Environment.NewLine + string.Join(Environment.NewLine, status.Details);
+        return opis;
     }
 
     private static DateTimeOffset PoczatekDniaUtc(DateTime data)

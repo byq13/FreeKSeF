@@ -60,7 +60,7 @@ Schematy XSD FA(3) (`schemat_FA(3)_v1-0E.xsd` + zależne typy MF) są osadzone w
 
 ✅ Generacja i walidacja FA(3) (XML przechodzi oficjalny XSD)
 ✅ Warstwa danych SQLite + migracje + import zakupu (z oszczędzaniem limitu KSeF)
-✅ Realna integracja KSeF na oficjalnym `KSeF.Client` 2.6.0
+✅ Realna integracja KSeF na oficjalnym `KSeF.Client` 2.8.1 (API KSeF 2.8.1)
 ✅ Interfejs WPF: listy sprzedaży/zakupu, podgląd/eksport PDF, eksport XML, bufor + wysyłka z potwierdzeniem
 
 ## Pobieranie (gotowy exe z CI)
