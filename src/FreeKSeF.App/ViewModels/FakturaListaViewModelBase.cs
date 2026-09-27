@@ -4,6 +4,7 @@ using System.Windows;
 using FreeKSeF.App.Mvvm;
 using FreeKSeF.App.Services;
 using FreeKSeF.App.Views;
+using FreeKSeF.Core.Fa3;
 using FreeKSeF.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
@@ -17,6 +18,17 @@ public enum OkresFiltru
     BiezacyKwartal,
     BiezacyRok,
     Wszystko,
+}
+
+/// <summary>Filtr rodzaju faktur na liscie.</summary>
+public enum RodzajFiltru
+{
+    Wszystkie,
+    Podstawowe,
+    Zaliczkowe,
+    Rozliczeniowe,
+    Korekty,
+    Uproszczone,
 }
 
 /// <summary>Pozycja listy miesiecy do wyboru (numer + polska nazwa).</summary>
@@ -33,6 +45,7 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
     private readonly KierunekFaktury _kierunek;
     private FakturaRow? _wybrany;
     private OkresFiltru _okres;
+    private RodzajFiltru _rodzajFiltr = RodzajFiltru.Wszystkie;
     private int _importMiesiac = DateTime.Today.Month;
     private int _importRok = DateTime.Today.Year;
 
@@ -73,6 +86,19 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         }
     }
 
+    public Array RodzajeFiltru => Enum.GetValues(typeof(RodzajFiltru));
+
+    /// <summary>Filtr rodzaju faktury (zaliczkowe, korekty...) - tylko na czas sesji.</summary>
+    public RodzajFiltru RodzajFiltr
+    {
+        get => _rodzajFiltr;
+        set
+        {
+            if (!SetField(ref _rodzajFiltr, value)) return;
+            Odswiez();
+        }
+    }
+
     public RelayCommand PodgladCommand { get; }
     public RelayCommand EdytorCommand { get; }
     public RelayCommand ZapiszXmlCommand { get; }
@@ -109,6 +135,15 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
         var q = db.Invoices.AsNoTracking().Where(i => i.CompanyId == firmaId && i.Kierunek == _kierunek);
         if (od is { } o) q = q.Where(i => i.DataWystawienia >= o);
         if (doDaty is { } d) q = q.Where(i => i.DataWystawienia <= d);
+        q = _rodzajFiltr switch
+        {
+            RodzajFiltru.Podstawowe => q.Where(i => i.Rodzaj == Fa3Rodzaj.Vat),
+            RodzajFiltru.Zaliczkowe => q.Where(i => i.Rodzaj == Fa3Rodzaj.Zal),
+            RodzajFiltru.Rozliczeniowe => q.Where(i => i.Rodzaj == Fa3Rodzaj.Roz),
+            RodzajFiltru.Korekty => q.Where(i => i.Rodzaj == Fa3Rodzaj.Kor || i.Rodzaj == Fa3Rodzaj.KorZal || i.Rodzaj == Fa3Rodzaj.KorRoz),
+            RodzajFiltru.Uproszczone => q.Where(i => i.Rodzaj == Fa3Rodzaj.Upr),
+            _ => q,
+        };
 
         foreach (var inv in q.OrderByDescending(i => i.DataWystawienia).ThenByDescending(i => i.Id).ToList())
             Wiersze.Add(new FakturaRow(inv));

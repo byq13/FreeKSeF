@@ -19,6 +19,11 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <!-- Przykladowe faktury FA(3) (fikcyjne dane, uklad jak w PDF-ach MF: zaliczkowa + rozliczeniowa) -->
+  <ItemGroup>
+    <None Include="Dane\*.xml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\FreeKSeF.Core\FreeKSeF.Core.csproj" />
     <ProjectReference Include="..\..\src\FreeKSeF.Data\FreeKSeF.Data.csproj" />

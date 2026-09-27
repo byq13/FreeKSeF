@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
   </ItemGroup>
 
   <!-- Wolny font DejaVu (obsluguje polskie znaki) osadzony w bibliotece,

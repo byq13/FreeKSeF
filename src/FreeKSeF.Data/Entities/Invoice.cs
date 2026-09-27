@@ -16,6 +16,12 @@ public class Invoice
 
     public string Numer { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Rodzaj faktury z FA(3): VAT, KOR, ZAL, ROZ, UPR, KOR_ZAL, KOR_ROZ.
+    /// Uzupelniany automatycznie z <see cref="Xml"/> przy zapisie (FreeKSeFDbContext).
+    /// </summary>
+    public string? Rodzaj { get; set; }
+
     /// <summary>Numer KSeF nadany po przyjeciu (np. 5260001246-20260603-...). Null gdy niewyslana.</summary>
     public string? NumerKsef { get; set; }
 

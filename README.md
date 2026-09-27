@@ -14,7 +14,8 @@ faktur.
 - 🧾 **Generowanie XML w formacie FA(3)** (schemat obowiązujący od 1.02.2026),
   walidowanego względem **oficjalnego XSD Ministerstwa Finansów**.
 - 📑 **Osobne listy faktur sprzedaży i zakupu** (zakładki).
-- 👁️ **Podgląd faktury jako PDF** w oknie (WebView2) + **zapis/eksport PDF**.
+- 👁️ **Podgląd faktury jako PDF** w oknie (WebView2) + **zapis/eksport PDF** — układ jak wizualizacja MF (KSeF), z **kodem QR weryfikacji** w KSeF.
+- 🏷️ **Rodzaj faktury na liście** (podstawowa / zaliczkowa / rozliczeniowa / korekta / uproszczona) z kolorową plakietką i filtrem.
 - 💾 **Eksport XML do pliku** — do ręcznego wgrania w Aplikacji Podatnika (gov.pl).
 - 📤 **Wysyłka do KSeF** — tylko na wyraźne polecenie z **potwierdzeniem** + odbiór **UPO**.
 - 📥 **Import faktur zakupu z KSeF po dowolnym zakresie dat** — bez limitu 30 dni,
@@ -49,7 +50,7 @@ logowanie podpisem kwalifikowanym (XAdES).
 | `FreeKSeF.Core` | `net10.0` | Model domenowy, **generacja i walidacja FA(3)** (klasy z XSD, mapper, serializer, walidator). |
 | `FreeKSeF.Data` | `net10.0` | EF Core + **SQLite**, encje, migracje, mapowanie encja↔model. |
 | `FreeKSeF.Ksef` | `net10.0` | Integracja z KSeF (`IKsefGateway`) — oparta o oficjalny **KSeF.Client** (MF). |
-| `FreeKSeF.Pdf`  | `net10.0` | Generowanie PDF faktury (**PDFsharp/MigraDoc**, MIT) z osadzonym fontem DejaVu. |
+| `FreeKSeF.Pdf`  | `net10.0` | Generowanie PDF faktury (**PDFsharp/MigraDoc**, MIT) w układzie wizualizacji MF, kod QR (**QRCoder**, MIT), osadzony font DejaVu. |
 | `FreeKSeF.App`  | `net10.0-windows` | Interfejs **WPF** (MVVM), podgląd PDF przez **WebView2**. |
 | `FreeKSeF.Tests`| `net10.0` | Testy: walidacja FA(3) z XSD, warstwa danych, generowanie PDF. |
 

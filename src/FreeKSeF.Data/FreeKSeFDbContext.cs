@@ -1,3 +1,4 @@
+using FreeKSeF.Core.Fa3;
 using FreeKSeF.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,7 @@ public class FreeKSeFDbContext : DbContext
         modelBuilder.Entity<Invoice>(e =>
         {
             e.HasIndex(i => i.NumerKsef);
+            e.Property(i => i.Rodzaj).HasMaxLength(10);
             e.HasIndex(i => new { i.CompanyId, i.Kierunek, i.DataWystawienia });
             e.HasMany(i => i.Pozycje)
                 .WithOne(p => p.Invoice!)
@@ -54,5 +56,41 @@ public class FreeKSeFDbContext : DbContext
         });
 
         modelBuilder.Entity<Product>().HasIndex(p => new { p.CompanyId, p.Nazwa });
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        UzupelnijRodzaje();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        UzupelnijRodzaje();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>
+    /// Rodzaj faktury zawsze wynika z XML - ustawiamy go centralnie, aby kazda sciezka
+    /// zapisu (nowa FV, import z KSeF, wczytanie XML, edytor) miala go poprawnie.
+    /// </summary>
+    private void UzupelnijRodzaje()
+    {
+        foreach (var e in ChangeTracker.Entries<Invoice>())
+        {
+            if (e.State == EntityState.Added ||
+                (e.State == EntityState.Modified && (e.Property(i => i.Xml).IsModified || e.Entity.Rodzaj is null)))
+                e.Entity.Rodzaj = Fa3Rodzaj.ZXml(e.Entity.Xml);
+        }
+    }
+
+    /// <summary>Jednorazowo uzupelnia rodzaj faktur zapisanych przed dodaniem tej kolumny.</summary>
+    public void UzupelnijBrakujaceRodzaje()
+    {
+        var bez = Invoices.Where(i => i.Rodzaj == null).ToList();
+        if (bez.Count == 0) return;
+        foreach (var inv in bez)
+            inv.Rodzaj = Fa3Rodzaj.ZXml(inv.Xml) ?? string.Empty; // "" = nieznany, nie sprawdzamy ponownie
+        base.SaveChanges(true);
     }
 }

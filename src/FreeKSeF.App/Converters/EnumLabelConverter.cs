@@ -14,6 +14,7 @@ public sealed class EnumLabelConverter : IValueConverter
         StawkaVat s => s.Etykieta(),
         FormaPlatnosci f => Forma(f),
         OkresFiltru o => Okres(o),
+        RodzajFiltru r => r == RodzajFiltru.Wszystkie ? "Wszystkie" : r.ToString(),
         Srodowisko e => e switch { Srodowisko.Test => "Testowe", Srodowisko.Demo => "Demo", Srodowisko.Produkcja => "Produkcyjne", _ => e.ToString() },
         KierunekFaktury k => k == KierunekFaktury.Sprzedaz ? "Sprzedaz" : "Zakup",
         StatusFaktury st => Status(st),

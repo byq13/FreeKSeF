@@ -36,5 +36,14 @@
             <Setter Property="HeadersVisibility" Value="Column" />
             <Setter Property="GridLinesVisibility" Value="Horizontal" />
         </Style>
+
+        <!-- Kolorowa plakietka rodzaju faktury (VAT/ZAL/ROZ/KOR/UPR) na listach faktur -->
+        <DataTemplate x:Key="RodzajPlakietka">
+            <Border Background="{Binding RodzajTlo}" CornerRadius="9" Padding="7,1" Margin="2,1"
+                    HorizontalAlignment="Left" ToolTip="{Binding RodzajOpis}">
+                <TextBlock Text="{Binding RodzajEtykieta}" Foreground="{Binding RodzajKolor}"
+                           FontSize="11" FontWeight="SemiBold" />
+            </Border>
+        </DataTemplate>
     </Application.Resources>
 </Application>

@@ -16,6 +16,12 @@
                             <DataTemplate><TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" /></DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+                    <TextBlock Text="Rodzaj:" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <ComboBox Width="130" SelectedItem="{Binding RodzajFiltr}" ItemsSource="{Binding RodzajeFiltru}" Margin="0,0,24,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate><TextBlock Text="{Binding Converter={StaticResource EnumLabel}}" /></DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="Wyślij do KSeF" Command="{Binding WyslijCommand}"
                             Background="#1F2937" Foreground="White" />
                     <Button Content="Podgląd / PDF" Command="{Binding PodgladCommand}" />
@@ -72,6 +78,8 @@
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Status" Binding="{Binding Faktura.Status, Converter={StaticResource EnumLabel}}" Width="110" Visibility="Collapsed" />
                 <DataGridTextColumn Header="Numer" Binding="{Binding Faktura.Numer}" Width="*" />
+                <DataGridTemplateColumn Header="Rodzaj" CellTemplate="{StaticResource RodzajPlakietka}"
+                                        SortMemberPath="Faktura.Rodzaj" Width="105" />
                 <DataGridTextColumn Header="Data" Binding="{Binding Faktura.DataWystawienia, StringFormat=d}" Width="95" />
                 <DataGridTextColumn Header="Data sprzedaży" Binding="{Binding Faktura.DataSprzedazy, StringFormat=d}" Width="105" Visibility="Collapsed" />
                 <DataGridTextColumn Header="Nabywca" Binding="{Binding Faktura.KontrahentNazwa}" Width="*" />

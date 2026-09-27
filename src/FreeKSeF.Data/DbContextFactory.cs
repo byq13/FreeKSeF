@@ -10,6 +10,8 @@ namespace FreeKSeF.Data;
 /// </summary>
 public static class FreeKSeFDb
 {
+    private static readonly HashSet<string> Uzupelnione = new(StringComparer.OrdinalIgnoreCase);
+
     public static string DomyslnaSciezka()
     {
         // Katalog pliku exe (dla single-file ProcessPath wskazuje realny exe, nie temp).
@@ -29,6 +31,10 @@ public static class FreeKSeFDb
             .Options;
         var ctx = new FreeKSeFDbContext(options);
         ctx.Database.Migrate();
+        // Uzupelnienie rodzaju starych faktur - raz na plik bazy w danym uruchomieniu.
+        lock (Uzupelnione)
+            if (Uzupelnione.Add(path))
+                ctx.UzupelnijBrakujaceRodzaje();
         return ctx;
     }
 }

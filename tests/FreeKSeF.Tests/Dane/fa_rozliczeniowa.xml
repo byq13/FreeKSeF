@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
+	<Naglowek>
+		<KodFormularza kodSystemowy="FA (3)" wersjaSchemy="1-0E">FA</KodFormularza>
+		<WariantFormularza>3</WariantFormularza>
+		<DataWytworzeniaFa>2026-09-22T10:00:00Z</DataWytworzeniaFa>
+		<SystemInfo>SAP</SystemInfo>
+	</Naglowek>
+	<Podmiot1>
+		<NrEORI>PL526000124600000</NrEORI>
+		<DaneIdentyfikacyjne><NIP>5260001246</NIP><Nazwa>Przykładowa Hurtownia Elektroniki Sp. z o.o.</Nazwa></DaneIdentyfikacyjne>
+		<Adres><KodKraju>PL</KodKraju><AdresL1>ul. Przykładowa 1, 90-001 Łódź</AdresL1></Adres>
+		<DaneKontaktowe><Email>biuro@example.pl</Email><Telefon>+48 42 000 00 00</Telefon></DaneKontaktowe>
+	</Podmiot1>
+	<Podmiot2>
+		<DaneIdentyfikacyjne><NIP>1132994096</NIP><Nazwa>Przykładowy Nabywca Sp. z o.o.</Nazwa></DaneIdentyfikacyjne>
+		<Adres><KodKraju>PL</KodKraju><AdresL1>ul. Testowa 2, 00-002 Warszawa</AdresL1></Adres>
+		<NrKlienta>0000012345</NrKlienta>
+		<JST>2</JST>
+		<GV>2</GV>
+	</Podmiot2>
+	<Fa>
+		<KodWaluty>PLN</KodWaluty>
+		<P_1>2026-09-22</P_1>
+		<P_2>FR 2026/09/0012</P_2>
+		<P_6>2026-09-22</P_6>
+		<P_15>0.00</P_15>
+		<Adnotacje><P_16>2</P_16><P_17>2</P_17><P_18>2</P_18><P_18A>2</P_18A><Zwolnienie><P_19N>1</P_19N></Zwolnienie><NoweSrodkiTransportu><P_22N>1</P_22N></NoweSrodkiTransportu><P_23>2</P_23><PMarzy><P_PMarzyN>1</P_PMarzyN></PMarzy></Adnotacje>
+		<RodzajFaktury>ROZ</RodzajFaktury>
+		<DodatkowyOpis><Klucz>Reklamacje</Klucz><Wartosc>Informujemy, że reklamacje ilościowe należy zgłosić w terminie 7 dni od otrzymania przesyłki.</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Zaliczka</Klucz><Wartosc>Otrzymano zaliczkę dnia 21.09.2026 na kwotę 143,76 PLN</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Faktura zaliczkowa</Klucz><Wartosc>Wystawiono fakturę zaliczkę nr FZ 2026/09/0007 dnia 21.09.2026 na kwotę 143,76 PLN</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Proforma numer</Klucz><Wartosc>PF 2026/09/0003</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Proforma data</Klucz><Wartosc>21.09.2026</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Proforma wartość brutto zamówienia</Klucz><Wartosc>143,76 PLN</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Proforma forma płatności</Klucz><Wartosc>Przedpłata 100%</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Faktura: wartość brutto wydanego towaru / rozliczonej usługi</Klucz><Wartosc>143,76 PLN</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Faktura: wartość netto wydanego towaru / rozliczonej usługi</Klucz><Wartosc>116,88 PLN</Wartosc></DodatkowyOpis>
+		<DodatkowyOpis><Klucz>Forma wysyłki</Klucz><Wartosc>FedEx PL</Wartosc></DodatkowyOpis>
+		<FakturaZaliczkowa><NrKSeFFaZaliczkowej>5260001246-20260921-A60BED800092-BC</NrKSeFFaZaliczkowej></FakturaZaliczkowa>
+		<FaWiersz><NrWierszaFa>1</NrWierszaFa><UU_ID>000001</UU_ID><P_7>Przekaźnik:elektromagnetyczny;Ucewki:9VDC;SPDT;15A;10A/30VDC; Producent: FINDER; Symbol producenta: 36.11.9.009.4011; Zgodność RoHS;</P_7><Indeks>36.11.9.009.4011</Indeks><P_8A>SZT</P_8A><P_8B>7</P_8B><P_9A>6.73</P_9A><P_11>47.11</P_11><P_11Vat>10.83</P_11Vat><P_12>23</P_12></FaWiersz>
+		<FaWiersz><NrWierszaFa>2</NrWierszaFa><UU_ID>000002</UU_ID><P_7>Koszty wysyłki;</P_7><Indeks>TRANSPORT</Indeks><P_8A>SZT</P_8A><P_8B>1</P_8B><P_9A>13.90</P_9A><P_11>13.90</P_11><P_11Vat>3.20</P_11Vat><P_12>23</P_12></FaWiersz>
+		<FaWiersz><NrWierszaFa>3</NrWierszaFa><UU_ID>000003</UU_ID><P_7>Przekaźnik:elektromagnetyczny;Ucewki:12VDC;DPDT;2A/125VAC; Producent: FINDER; Symbol producenta: 30.22.7.012.0020; Zgodność RoHS;</P_7><Indeks>30.22.7.012.0020</Indeks><P_8A>SZT</P_8A><P_8B>1</P_8B><P_9A>20.65</P_9A><P_11>20.65</P_11><P_11Vat>4.75</P_11Vat><P_12>23</P_12></FaWiersz>
+		<FaWiersz><NrWierszaFa>4</NrWierszaFa><UU_ID>000004</UU_ID><P_7>Mikroprzełącznik SNAP ACTION;12A/250VAC;bez dźwigni;SPDT; Producent: SAIA-BURGESS; Symbol producenta: XGK2-88Z1; Zgodność RoHS;</P_7><Indeks>XGK2-88Z1</Indeks><P_8A>SZT</P_8A><P_8B>3</P_8B><P_9A>11.74</P_9A><P_11>35.22</P_11><P_11Vat>8.10</P_11Vat><P_12>23</P_12></FaWiersz>
+		<Platnosc>
+			<Zaplacono>1</Zaplacono>
+			<DataZaplaty>2026-09-21</DataZaplaty>
+			<PlatnoscInna>1</PlatnoscInna>
+			<OpisPlatnosci>Przedpłata</OpisPlatnosci>
+			<RachunekBankowy><NrRB>61109010140000071219812874</NrRB><SWIFT>TESTPLPWXXX</SWIFT><NazwaBanku>Bank Przykładowy S.A.</NazwaBanku></RachunekBankowy>
+		</Platnosc>
+		<WarunkiTransakcji>
+			<Zamowienia><DataZamowienia>2026-09-21</DataZamowienia><NrZamowienia>ZAM-000123</NrZamowienia></Zamowienia>
+			<WarunkiDostawy>EXW ŁÓDŹ</WarunkiDostawy>
+		</WarunkiTransakcji>
+		
+	</Fa>
+	<Stopka>
+		<Informacje><StopkaFaktury>Kapitał zakładowy: 5 000 zł || Sąd Rejonowy (przykład) || Więcej informacji o niedostarczonych produktach, wystawionych fakturach i płatnościach znajdą Państwo po zalogowaniu na naszej stronie www.example.pl.</StopkaFaktury></Informacje>
+		<Rejestry><PelnaNazwa>Przykładowa Hurtownia Elektroniki Sp. z o.o.</PelnaNazwa><KRS>0000000001</KRS><REGON>000000001</REGON><BDO>00000001</BDO></Rejestry>
+	</Stopka>
+</Faktura>

@@ -18,7 +18,24 @@ public static class FakturaService
     public static byte[] Pdf(Invoice inv)
     {
         ArgumentNullException.ThrowIfNull(inv);
-        return FakturaPdfGenerator.GenerujPdf(inv.Xml, inv.NumerKsef, !string.IsNullOrEmpty(inv.UpoXml));
+        return FakturaPdfGenerator.GenerujPdf(inv.Xml, inv.NumerKsef, !string.IsNullOrEmpty(inv.UpoXml), AdresQr(inv));
+    }
+
+    /// <summary>
+    /// Adres weryfikacji QR wg srodowiska KSeF firmy (faktura z testowego KSeF nie zweryfikuje sie na produkcji).
+    /// Null, gdy faktura nie ma numeru KSeF - wtedy PDF nie zawiera kodu QR.
+    /// </summary>
+    private static string? AdresQr(Invoice inv)
+    {
+        if (string.IsNullOrEmpty(inv.NumerKsef)) return null;
+        using var db = AppServices.Db();
+        return db.Companies.Find(inv.CompanyId)?.Srodowisko switch
+        {
+            Srodowisko.Test => FakturaPdfGenerator.QrTest,
+            Srodowisko.Demo => FakturaPdfGenerator.QrDemo,
+            Srodowisko.Produkcja => FakturaPdfGenerator.QrProdukcja,
+            _ => null,
+        };
     }
 
     /// <summary>Zapisuje PDF do pliku tymczasowego (do podgladu w oknie) i zwraca sciezke.</summary>
