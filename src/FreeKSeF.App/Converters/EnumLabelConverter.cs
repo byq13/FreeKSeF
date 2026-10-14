@@ -27,7 +27,9 @@ public sealed class EnumLabelConverter : IValueConverter
     private static string Okres(OkresFiltru o) => o switch
     {
         OkresFiltru.BiezacyMiesiac => "Bieżący miesiąc",
+        OkresFiltru.PoprzedniMiesiac => "Poprzedni miesiąc",
         OkresFiltru.BiezacyKwartal => "Bieżący kwartał",
+        OkresFiltru.PoprzedniKwartal => "Poprzedni kwartał",
         OkresFiltru.BiezacyRok => "Bieżący rok",
         OkresFiltru.Wszystko => "Wszystko",
         _ => o.ToString(),

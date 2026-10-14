@@ -15,7 +15,9 @@ namespace FreeKSeF.App.ViewModels;
 public enum OkresFiltru
 {
     BiezacyMiesiac,
+    PoprzedniMiesiac,
     BiezacyKwartal,
+    PoprzedniKwartal,
     BiezacyRok,
     Wszystko,
 }
@@ -233,10 +235,16 @@ public abstract class FakturaListaViewModelBase : ViewModelBase
             case OkresFiltru.BiezacyMiesiac:
                 var pm = new DateTime(dzis.Year, dzis.Month, 1);
                 return (pm, pm.AddMonths(1).AddDays(-1));
+            case OkresFiltru.PoprzedniMiesiac:
+                var ppm = new DateTime(dzis.Year, dzis.Month, 1).AddMonths(-1);
+                return (ppm, ppm.AddMonths(1).AddDays(-1));
             case OkresFiltru.BiezacyKwartal:
                 var startMies = (dzis.Month - 1) / 3 * 3 + 1;
                 var pk = new DateTime(dzis.Year, startMies, 1);
                 return (pk, pk.AddMonths(3).AddDays(-1));
+            case OkresFiltru.PoprzedniKwartal:
+                var ppk = new DateTime(dzis.Year, (dzis.Month - 1) / 3 * 3 + 1, 1).AddMonths(-3);
+                return (ppk, ppk.AddMonths(3).AddDays(-1));
             case OkresFiltru.BiezacyRok:
                 return (new DateTime(dzis.Year, 1, 1), new DateTime(dzis.Year, 12, 31));
             default:
